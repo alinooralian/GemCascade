@@ -369,6 +369,49 @@ public:
         }
     }
 
+    vector<pii> hint()
+    {
+        int max_size = 0;
+        int r1, r2;
+        int c1, c2;
+
+        for (int i = 0; i < ROWS; i++)
+        {
+            for (int j = 0; j < COLS; j++)
+            {
+                if (j != 0)
+                {
+                    swap(board[i][j], board[i][j - 1]);
+                    auto tmp = find_match();
+                    swap(board[i][j], board[i][j - 1]);
+
+                    if (tmp.size() > max_size)
+                    {
+                        max_size = tmp.size();
+                        r1 = i, r2 = i;
+                        c1 = j, c2 = j - 1;
+                    }
+                }
+
+                if (i != 0)
+                {
+                    swap(board[i][j], board[i - 1][j]);
+                    auto tmp = find_match();
+                    swap(board[i][j], board[i - 1][j]);
+
+                    if (tmp.size() > max_size)
+                    {
+                        max_size = tmp.size();
+                        r1 = i, r2 = i - 1;
+                        c1 = j, c2 = j;
+                    }
+                }
+            }
+        }
+
+        return {{r1, c1}, {r2, c2}};
+    }
+
     bool cascade(int r1, int c1, int r2, int c2)
     {
         if (abs(r1 - r2) + abs(c1 - c2) != 1)
