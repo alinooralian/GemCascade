@@ -333,6 +333,42 @@ public:
         vertical_line();
     }
 
+    void bomb(int row, int col)
+    {
+        int tmp[3] = {0, 1, -1};
+
+        for (int i = 0; i < 3; i++)
+        {
+            int r = row + tmp[i];
+            int c = col;
+
+            if (r == COLS || r == -1)
+                continue;
+
+            board[r][c] = ' ';
+
+            if (c > 0)
+                board[r][c - 1] = ' ';
+
+            if (c < COLS - 1)
+                board[r][c + 1] = ' ';
+        }
+    }
+
+    void rocket(char type, int num)
+    {
+        if (type == 'r')
+        {
+            for (int j = 0; j < COLS; j++)
+                board[num][j] = ' ';
+        }
+        else
+        {
+            for (int i = 0; i < ROWS; i++)
+                board[i][num] = ' ';
+        }
+    }
+
     bool cascade(int r1, int c1, int r2, int c2)
     {
         if (abs(r1 - r2) + abs(c1 - c2) != 1)
@@ -393,6 +429,7 @@ int main()
         {
             Game g;
             g.initialize();
+
             while (true)
             {
                 system("cls");
