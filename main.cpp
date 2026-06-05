@@ -54,7 +54,6 @@ private:
         return symbool[rand_idx];
     }
 
-public:
     bool is_there_match()
     {
         for (int i = 0; i < ROWS; i++)
@@ -126,112 +125,6 @@ public:
             }
         }
         return false;
-    }
-
-    void initialize()
-    {
-        do
-        {
-            for (int i = 0; i < ROWS; i++)
-                board[i].clear();
-
-            for (int i = 0; i < ROWS; i++)
-            {
-                for (int j = 0; j < COLS; j++)
-                {
-                    board[i].push_back(random_gem());
-                    while (!create_initial_match(i, j))
-                    {
-                        board[i].pop_back();
-                        board[i].push_back(random_gem());
-                    }
-                }
-            }
-        } while (!is_valid_board());
-    }
-
-    void vertical_line()
-    {
-        cout << "  ";
-
-        for (int i = 0; i < COLS; i++)
-            cout << "+-----";
-        cout << "+" << endl;
-    }
-
-    void horizontal_line(int row)
-    {
-        cout << row << " ";
-
-        for (int i = 0; i < COLS; i++)
-            cout << "|" << "  " << color_of_gems[board[row][i]] << board[row][i] << RESET << "  ";
-
-        cout << "|" << endl;
-    }
-
-    void print_board()
-    {
-        cout << "  ";
-
-        for (int i = 0; i < COLS; i++)
-            cout << "   " << i << "  ";
-        cout << endl;
-
-        for (int i = 0; i < ROWS; i++)
-        {
-            vertical_line();
-            horizontal_line(i);
-        }
-        vertical_line();
-    }
-
-    void refill()
-    {
-        for (int j = 0; j < COLS; j++)
-        {
-            for (int i = 0; i < ROWS; i++)
-            {
-                if (board[i][j] != ' ')
-                    break;
-
-                board[i][j] = random_gem();
-            }
-        }
-    }
-
-    void apply_gravity()
-    {
-        for (int j = 0; j < COLS; j++)
-        {
-            int first_empty_cell = ROWS + 1, last_not_empty_cell = ROWS + 1;
-            for (int i = ROWS - 1; i >= 0; i--)
-            {
-                if (board[i][j] == ' ')
-                {
-                    first_empty_cell = i;
-                    break;
-                }
-            }
-
-            if (first_empty_cell == ROWS + 1)
-                continue;
-
-            for (int i = 0; i < ROWS; i++)
-            {
-                if (i != ROWS - 1 && board[i + 1][j] == ' ' && board[i][j] != ' ')
-                {
-                    last_not_empty_cell = i;
-                }
-            }
-
-            if (last_not_empty_cell != ROWS + 1)
-                while (last_not_empty_cell >= 0)
-                {
-                    swap(board[first_empty_cell][j], board[last_not_empty_cell][j]);
-                    first_empty_cell--;
-                    last_not_empty_cell--;
-                }
-        }
     }
 
     vector<pii> find_match()
@@ -333,6 +226,113 @@ public:
         return match;
     }
 
+    void apply_gravity()
+    {
+        for (int j = 0; j < COLS; j++)
+        {
+            int first_empty_cell = ROWS + 1, last_not_empty_cell = ROWS + 1;
+            for (int i = ROWS - 1; i >= 0; i--)
+            {
+                if (board[i][j] == ' ')
+                {
+                    first_empty_cell = i;
+                    break;
+                }
+            }
+
+            if (first_empty_cell == ROWS + 1)
+                continue;
+
+            for (int i = 0; i < ROWS; i++)
+            {
+                if (i != ROWS - 1 && board[i + 1][j] == ' ' && board[i][j] != ' ')
+                {
+                    last_not_empty_cell = i;
+                }
+            }
+
+            if (last_not_empty_cell != ROWS + 1)
+                while (last_not_empty_cell >= 0)
+                {
+                    swap(board[first_empty_cell][j], board[last_not_empty_cell][j]);
+                    first_empty_cell--;
+                    last_not_empty_cell--;
+                }
+        }
+    }
+
+    void refill()
+    {
+        for (int j = 0; j < COLS; j++)
+        {
+            for (int i = 0; i < ROWS; i++)
+            {
+                if (board[i][j] != ' ')
+                    break;
+
+                board[i][j] = random_gem();
+            }
+        }
+    }
+
+public:
+    void initialize()
+    {
+        do
+        {
+            for (int i = 0; i < ROWS; i++)
+                board[i].clear();
+
+            for (int i = 0; i < ROWS; i++)
+            {
+                for (int j = 0; j < COLS; j++)
+                {
+                    board[i].push_back(random_gem());
+                    while (!create_initial_match(i, j))
+                    {
+                        board[i].pop_back();
+                        board[i].push_back(random_gem());
+                    }
+                }
+            }
+        } while (!is_valid_board());
+    }
+
+    void vertical_line()
+    {
+        cout << "  ";
+
+        for (int i = 0; i < COLS; i++)
+            cout << "+-----";
+        cout << "+" << endl;
+    }
+
+    void horizontal_line(int row)
+    {
+        cout << row << " ";
+
+        for (int i = 0; i < COLS; i++)
+            cout << "|" << "  " << color_of_gems[board[row][i]] << board[row][i] << RESET << "  ";
+
+        cout << "|" << endl;
+    }
+
+    void print_board()
+    {
+        cout << "  ";
+
+        for (int i = 0; i < COLS; i++)
+            cout << "   " << i << "  ";
+        cout << endl;
+
+        for (int i = 0; i < ROWS; i++)
+        {
+            vertical_line();
+            horizontal_line(i);
+        }
+        vertical_line();
+    }
+
     bool cascade(int r1, int c1, int r2, int c2)
     {
         if (abs(r1 - r2) + abs(c1 - c2) != 1)
@@ -356,7 +356,7 @@ public:
 
             for (auto cell : match)
                 board[cell.ff][cell.ss] = ' ';
-            
+
             print_board();
             Sleep(3500);
 
