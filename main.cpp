@@ -1,5 +1,7 @@
 #include <bits/stdc++.h>
 #include <random>
+#include <windows.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -169,8 +171,6 @@ public:
 
     void print_board()
     {
-        cout << "Score: " << score << "\n\n";
-
         cout << "  ";
 
         for (int i = 0; i < COLS; i++)
@@ -339,6 +339,8 @@ public:
             return false;
 
         swap(board[r1][c1], board[r2][c2]);
+        print_board();
+        Sleep(3500);
 
         bool check = is_there_match();
 
@@ -354,11 +356,18 @@ public:
 
             for (auto cell : match)
                 board[cell.ff][cell.ss] = ' ';
+            
+            print_board();
+            Sleep(3500);
 
             (coef >= 40) ? (coef += 2) : (coef *= 2);
 
             apply_gravity();
+            print_board();
+            Sleep(3500);
             refill();
+            print_board();
+            Sleep(5000);
 
             check = is_there_match();
         }
@@ -386,6 +395,8 @@ int main()
             g.initialize();
             while (true)
             {
+                system("cls");
+
                 g.print_board();
 
                 cout << "1 to (Swap -> r1 c1 r2 c2) or -1 to back\n";
@@ -397,13 +408,9 @@ int main()
                 int r1, c1, r2, c2;
                 cin >> r1 >> c1 >> r2 >> c2;
 
-                if (g.cascade(r1, c1, r2, c2))
+                if (!g.cascade(r1, c1, r2, c2))
                 {
-                    cout << "OK\n";
-                }
-                else
-                {
-                    cout << "Invalid Move!\n";
+                    cout << "Invalid Move!\n\n";
                 }
             }
         }
