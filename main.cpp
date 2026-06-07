@@ -66,7 +66,7 @@ private:
     {
         random_device rd;
         mt19937 gen(rd());
-        uniform_int_distribution<> dist(0, 4);
+        uniform_int_distribution<> dist(0, 5);
 
         int rand_idx = dist(gen);
 
@@ -103,14 +103,13 @@ private:
                 v.push_back(cell);
         }
 
-
         return v;
     }
 
     bool is_there_match()
     {
-        for(int i = 0 ; i < ROWS; i++)
-            for(int j = 0; j < COLS; j++)
+        for (int i = 0; i < ROWS; i++)
+            for (int j = 0; j < COLS; j++)
                 mark[i][j] = 0;
 
         for (int i = 0; i < ROWS; i++)
@@ -241,34 +240,50 @@ private:
     {
         for (int j = 0; j < COLS; j++)
         {
-            int first_empty_cell = ROWS + 1, last_not_empty_cell = ROWS + 1;
-            for (int i = ROWS - 1; i >= 0; i--)
+            while (true)
             {
-                if (board[i][j] == ' ')
+                int first_empty_cell = ROWS + 1, last_not_empty_cell = ROWS + 1;
+                for (int i = ROWS - 1; i >= 0; i--)
                 {
-                    first_empty_cell = i;
+                    if (board[i][j] == ' ')
+                    {
+                        first_empty_cell = i;
+                        break;
+                    }
+                }
+
+                if (first_empty_cell == ROWS + 1)
+                    break;
+
+                for (int i = first_empty_cell - 1; i >= 0; i--)
+                {
+                    if (board[i][j] != ' ')
+                    {
+                        last_not_empty_cell = i;
+                        break;
+                    }
+                }
+
+                if (last_not_empty_cell != ROWS + 1)
+                {
+                    while (last_not_empty_cell >= 0)
+                    {
+                        if (board[last_not_empty_cell][j] == ' ')
+                            break;
+
+                        if (board[first_empty_cell][j] != ' ')
+                            break;
+
+                        swap(board[first_empty_cell][j], board[last_not_empty_cell][j]);
+                        first_empty_cell--;
+                        last_not_empty_cell--;
+                    }
+                }
+                else
+                {
                     break;
                 }
             }
-
-            if (first_empty_cell == ROWS + 1)
-                continue;
-
-            for (int i = 0; i < ROWS; i++)
-            {
-                if (i != ROWS - 1 && board[i + 1][j] == ' ' && board[i][j] != ' ')
-                {
-                    last_not_empty_cell = i;
-                }
-            }
-
-            if (last_not_empty_cell != ROWS + 1)
-                while (last_not_empty_cell >= 0)
-                {
-                    swap(board[first_empty_cell][j], board[last_not_empty_cell][j]);
-                    first_empty_cell--;
-                    last_not_empty_cell--;
-                }
         }
     }
 
@@ -291,21 +306,21 @@ public:
     {
         do
         {
-        for (int i = 0; i < ROWS; i++)
-            board[i].clear();
+            for (int i = 0; i < ROWS; i++)
+                board[i].clear();
 
-        for (int i = 0; i < ROWS; i++)
-        {
-            for (int j = 0; j < COLS; j++)
+            for (int i = 0; i < ROWS; i++)
             {
-                board[i].push_back(random_gem());
-                while (create_initial_match(i, j))
+                for (int j = 0; j < COLS; j++)
                 {
-                    board[i].pop_back();
                     board[i].push_back(random_gem());
+                    while (create_initial_match(i, j))
+                    {
+                        board[i].pop_back();
+                        board[i].push_back(random_gem());
+                    }
                 }
             }
-        }
 
         } while (!is_valid_board());
     }
@@ -343,6 +358,37 @@ public:
             horizontal_line(i);
         }
         vertical_line();
+    }
+
+    bool game_control()
+    {
+        print_board();
+
+        cout << "[CONTROLS]: " << "W : Swap " << '|' << "S : Save " << '|' << "Q : Quit" << endl;
+
+        char choice;
+        cin >> choice;
+
+        if (choice == 'W')
+        {
+            cout << "[INPUT]: " << "Enter First Row & Col:" << endl;
+
+            int r1, c1;
+            cin >> r1 >> c1;
+
+            cout << "[INPUT]: " << "Enter Second Row & Col:" << endl;
+
+            int r2, c2;
+            cin >> r2 >> c2;
+
+            if (!cascade(r1, c1, r2, c2))
+                cout << "Invalid Move!" << endl;
+
+            return true;
+        }
+
+        if (choice == 'Q')
+            return false;
     }
 
     void bomb(int row, int col)
@@ -489,21 +535,8 @@ int main()
             {
                 system("cls");
 
-                g.print_board();
-
-                cout << "1 to (Swap -> r1 c1 r2 c2) or -1 to back\n";
-                cin >> choice;
-
-                if (choice == -1)
+                if (!g.game_control())
                     break;
-
-                int r1, c1, r2, c2;
-                cin >> r1 >> c1 >> r2 >> c2;
-
-                if (!g.cascade(r1, c1, r2, c2))
-                {
-                    cout << "Invalid Move!\n\n";
-                }
             }
         }
         else if (choice == 4)
