@@ -21,8 +21,8 @@ const int ROWS = 8, COLS = 8;
 class Game
 {
 private:
-    char symbool[10] = {'A', 'B', 'C', 'D', 'E'};
-    map<char, string> color_of_gems = {{'A', RED}, {'B', GREEN}, {'C', YELLOW}, {'D', BLUE}, {'E', PURPLE}};
+    char symbool[10] = {'A', 'B', 'C', 'D', 'E', 'F'};
+    map<char, string> color_of_gems = {{'A', RED}, {'B', GREEN}, {'C', YELLOW}, {'D', BLUE}, {'E', PURPLE}, {'F', CYAN}};
     vector<char> board[10];
     int score = 0, coef = 10;
     bool mark[ROWS][COLS];
@@ -487,7 +487,7 @@ int main()
 
             while (true)
             {
-                // system("cls");
+                system("cls");
 
                 g.print_board();
 
