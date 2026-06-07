@@ -25,22 +25,41 @@ private:
     map<char, string> color_of_gems = {{'A', RED}, {'B', GREEN}, {'C', YELLOW}, {'D', BLUE}, {'E', PURPLE}};
     vector<char> board[10];
     int score = 0, coef = 10;
+    bool mark[ROWS][COLS];
 
     bool create_initial_match(int row, int col)
     {
         if (row > 1)
         {
             if (board[row][col] == board[row - 1][col] && board[row][col] == board[row - 2][col])
-                return false;
+                return true;
         }
 
         if (col > 1)
         {
             if (board[row][col] == board[row][col - 1] && board[row][col] == board[row][col - 2])
-                return false;
+                return true;
         }
 
-        return true;
+        if (row > 0 && col > 0)
+        {
+            if (board[row][col] == board[row][col - 1] && board[row][col] == board[row - 1][col])
+                return true;
+
+            if (board[row][col] == board[row][col - 1] && board[row - 1][col - 1])
+                return true;
+
+            if (board[row][col] == board[row - 1][col] && board[row][col] == board[row - 1][col - 1])
+                return true;
+        }
+
+        if (row > 0 && col < COLS - 1)
+        {
+            if (board[row][col] == board[row - 1][col] && board[row][col] == board[row - 1][col + 1])
+                return true;
+        }
+
+        return false;
     }
 
     char random_gem()
@@ -54,43 +73,57 @@ private:
         return symbool[rand_idx];
     }
 
-    bool is_there_match()
+    vector<pii> dfs(int row, int col)
     {
-        for (int i = 0; i < ROWS; i++)
-        {
-            int cnt = 1;
-            for (int j = 0; j < COLS; j++)
-            {
-                if (j != COLS - 1 && board[i][j] == board[i][j + 1])
-                {
-                    cnt++;
-                }
-                else
-                {
-                    if (cnt >= 3)
-                        return true;
+        vector<pii> v;
+        v.push_back({row, col});
 
-                    cnt = 1;
-                }
-            }
+        mark[row][col] = true;
+
+        int dr[] = {-1, 1, 0, 0};
+        int dc[] = {0, 0, -1, 1};
+
+        for (int i = 0; i < 4; i++)
+        {
+            int r = row + dr[i];
+            int c = col + dc[i];
+
+            if (r < 0 || r >= ROWS || c < 0 || c >= COLS)
+                continue;
+
+            if (mark[r][c])
+                continue;
+
+            if (board[r][c] != board[row][col])
+                continue;
+
+            vector<pii> vc = dfs(r, c);
+
+            for (auto cell : vc)
+                v.push_back(cell);
         }
 
-        for (int j = 0; j < COLS; j++)
-        {
-            int cnt = 1;
-            for (int i = 0; i < ROWS; i++)
-            {
-                if (i != ROWS - 1 && board[i][j] == board[i + 1][j])
-                {
-                    cnt++;
-                }
-                else
-                {
-                    if (cnt >= 3)
-                        return true;
 
-                    cnt = 1;
-                }
+        return v;
+    }
+
+    bool is_there_match()
+    {
+        for(int i = 0 ; i < ROWS; i++)
+            for(int j = 0; j < COLS; j++)
+                mark[i][j] = 0;
+
+        for (int i = 0; i < ROWS; i++)
+        {
+            for (int j = 0; j < COLS; j++)
+            {
+                if (mark[i][j])
+                    continue;
+
+                vector<pii> vc = dfs(i, j);
+
+                if (vc.size() >= 3)
+                    return true;
             }
         }
 
@@ -132,94 +165,72 @@ private:
         vector<pii> match;
 
         for (int i = 0; i < ROWS; i++)
+            for (int j = 0; j < COLS; j++)
+                mark[i][j] = 0;
+
+        for (int i = 0; i < ROWS; i++)
         {
-            int cnt = 1;
             for (int j = 0; j < COLS; j++)
             {
-                if (j != COLS - 1 && board[i][j] == board[i][j + 1])
+                if (mark[i][j])
+                    continue;
+
+                vector<pii> vc = dfs(i, j);
+                int cnt = vc.size();
+
+                if (cnt < 3)
+                    continue;
+
+                if (cnt == 4)
                 {
-                    cnt++;
-                }
-                else
-                {
-                    if (cnt >= 3)
+                    bool check_row = true;
+                    bool check_col = true;
+
+                    for (int k = 0; k < cnt - 1; k++)
                     {
-                        score += cnt * coef;
-
-                        for (int k = 0; k < cnt; k++)
-                            match.push_back({i, j - k});
-
-                        if (cnt == 4)
-                        {
-                            for (int k = 0; k < j - 3; k++)
-                                match.push_back({i, k});
-
-                            for (int k = j + 1; k < COLS; k++)
-                                match.push_back({i, k});
-                        }
-
-                        if (cnt == 5)
-                        {
-                            for (int r = 0; r < ROWS; r++)
-                            {
-                                for (int c = 0; c < COLS; c++)
-                                {
-                                    if (board[r][c] == board[i][j])
-                                    {
-                                        match.push_back({r, c});
-                                    }
-                                }
-                            }
-                        }
+                        if (vc[k].ff != vc[k + 1].ff)
+                            check_row = false;
+                        if (vc[k].ss != vc[k + 1].ss)
+                            check_col = false;
                     }
-                    cnt = 1;
-                }
-            }
-        }
 
-        for (int j = 0; j < COLS; j++)
-        {
-            int cnt = 1;
-            for (int i = 0; i < ROWS; i++)
-            {
-                if (i != ROWS - 1 && board[i][j] == board[i + 1][j])
-                {
-                    cnt++;
-                }
-                else
-                {
-                    if (cnt >= 3)
+                    if (check_row)
                     {
-                        score += cnt * coef;
+                        int r = vc[0].ff;
 
-                        for (int k = 0; k < cnt; k++)
-                            match.push_back({i - k, j});
+                        for (int c = 0; c < COLS; c++)
+                            vc.push_back({r, c});
 
-                        if (cnt == 4)
-                        {
-                            for (int k = 0; k < i - 3; k++)
-                                match.push_back({k, j});
-
-                            for (int k = i + 1; k < ROWS; k++)
-                                match.push_back({k, j});
-                        }
-
-                        if (cnt == 5)
-                        {
-                            for (int r = 0; r < ROWS; r++)
-                            {
-                                for (int c = 0; c < COLS; c++)
-                                {
-                                    if (board[r][c] == board[i][j])
-                                    {
-                                        match.push_back({r, c});
-                                    }
-                                }
-                            }
-                        }
+                        cnt = 8;
                     }
-                    cnt = 1;
+
+                    if (check_col)
+                    {
+                        int c = vc[0].ss;
+
+                        for (int r = 0; r < ROWS; r++)
+                            vc.push_back({r, c});
+
+                        cnt = 8;
+                    }
                 }
+
+                if (cnt == 5)
+                {
+                    char target = board[vc[0].ff][vc[0].ss];
+
+                    for (int r = 0; r < ROWS; r++)
+                        for (int c = 0; c < COLS; c++)
+                            if (board[r][c] == target)
+                                vc.push_back({r, c});
+
+                    cnt = vc.size() - 5;
+                }
+
+                score += cnt * coef;
+
+                for (auto cell : vc)
+                    match.push_back(cell);
             }
         }
 
@@ -280,21 +291,22 @@ public:
     {
         do
         {
-            for (int i = 0; i < ROWS; i++)
-                board[i].clear();
+        for (int i = 0; i < ROWS; i++)
+            board[i].clear();
 
-            for (int i = 0; i < ROWS; i++)
+        for (int i = 0; i < ROWS; i++)
+        {
+            for (int j = 0; j < COLS; j++)
             {
-                for (int j = 0; j < COLS; j++)
+                board[i].push_back(random_gem());
+                while (create_initial_match(i, j))
                 {
+                    board[i].pop_back();
                     board[i].push_back(random_gem());
-                    while (!create_initial_match(i, j))
-                    {
-                        board[i].pop_back();
-                        board[i].push_back(random_gem());
-                    }
                 }
             }
+        }
+
         } while (!is_valid_board());
     }
 
@@ -475,7 +487,7 @@ int main()
 
             while (true)
             {
-                system("cls");
+                // system("cls");
 
                 g.print_board();
 
