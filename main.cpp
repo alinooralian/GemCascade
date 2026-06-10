@@ -27,6 +27,8 @@ private:
     map<char, string> color_of_gems = {{'A', RED}, {'B', GREEN}, {'C', YELLOW}, {'D', BLUE}, {'E', PURPLE}, {'F', CYAN}, {'G', BROWN}, {'H', PINK}};
     vector<char> board[10];
     int score = 0, coef = 10;
+    int moves = 30;
+    string level = "Easy";
     bool mark[ROWS][COLS];
 
     bool create_initial_match(int row, int col)
@@ -228,8 +230,6 @@ private:
                     cnt = vc.size() - 5;
                 }
 
-                score += cnt * coef;
-
                 for (auto cell : vc)
                     match.push_back(cell);
             }
@@ -305,6 +305,8 @@ private:
 
     void bomb(int row, int col)
     {
+        score -= 100;
+
         int tmp[3] = {0, 1, -1};
 
         for (int i = 0; i < 3; i++)
@@ -324,7 +326,7 @@ private:
                 board[r][c + 1] = ' ';
         }
 
-        if(row > 0)
+        if (row > 0)
             cascade(row, col, row - 1, col);
         else
             cascade(row, col, row + 1, col);
@@ -332,6 +334,8 @@ private:
 
     void rocket(char type, int num)
     {
+        score -= 120;
+
         if (type == 'R')
         {
             for (int j = 0; j < COLS; j++)
@@ -387,6 +391,7 @@ private:
                 }
             }
         }
+        score -= 70;
 
         return {{r1, c1}, {r2, c2}};
     }
@@ -452,17 +457,32 @@ public:
 
     bool game_control()
     {
+        for (int i = 0; i < 113; i++)
+            cout << '*';
+        cout << endl;
+
+        cout << "|\tScore: " << score << "\t|";
+        cout << "|\tRemaining Moves: " << moves << "\t|";
+        cout << "|\tLevel: " << level << "\t|";
+        cout << "|\tGem CasCade V.1.0\t|" << endl;
+
+        for (int i = 0; i < 113; i++)
+            cout << '*';
+        cout << "\n\n";
+
         print_board();
 
         cout << "\n\n";
         for (int i = 0; i < 120; i++)
             cout << "*";
         cout << "\n\n";
+
         cout << "[CONTROLS]:" << " W: Swap " << '|' << " H: Hint(-70 Score) " << '|' << " R: Rocket(-120 Score) " << '|' << " B: Bomb(-100 Score) " << '|' << " S: Save " << '|' << " Q: Quit" << endl;
         cout << "\n\n";
 
         char choice;
         cin >> choice;
+        cout << endl;
 
         if (choice == 'W')
         {
@@ -470,11 +490,13 @@ public:
 
             int r1, c1;
             cin >> r1 >> c1;
+            cout << endl;
 
             cout << "[INPUT]:" << " Enter Second Row & Col:\n\n";
 
             int r2, c2;
             cin >> r2 >> c2;
+            cout << endl;
 
             Sleep(1000);
 
@@ -492,16 +514,16 @@ public:
 
                 int r, c;
                 cin >> r >> c;
+                cout << endl;
 
                 bomb(r, c);
-
-                Sleep(2000);
             }
             else
             {
                 cout << "[ERORR]:" << " Your score is less than 100.\n\n";
-                Sleep(2000);
             }
+
+            Sleep(2000);
         }
 
         if (choice == 'R')
@@ -512,24 +534,25 @@ public:
 
                 char type;
                 cin >> type;
+                cout << endl;
 
                 if (type == 'R')
-                    cout << "[INPUT]:" << " Enter Row:\n\n";
+                    cout << "[INPUT]:" << " Enter Row Number:\n\n";
                 else
-                    cout << "[INPUT]:" << " Enter Col:\n\n";
+                    cout << "[INPUT]:" << " Enter Col Number:\n\n";
 
-                int k;
-                cin >> k;
+                int num;
+                cin >> num;
+                cout << endl;
 
-                rocket(type, k);
-
-                Sleep(2000);
+                rocket(type, num);
             }
             else
             {
                 cout << "[ERORR]:" << " Your score is less than 120.\n\n";
-                Sleep(2000);
             }
+
+            Sleep(2000);
         }
 
         if (choice == 'H')
@@ -539,17 +562,20 @@ public:
                 vector<pii> v = hint();
 
                 cout << "[HINT]:" << "Swap " << v[0].ff << ' ' << v[0].ss << " with " << v[1].ff << ' ' << v[1].ss << "\n\n";
-                Sleep(2000);
             }
             else
             {
                 cout << "[ERORR]:" << " Your score is less than 70.\n\n";
-                Sleep(2000);
             }
+
+            Sleep(4000);
         }
 
         if (choice == 'Q')
+        {
+            system("cls");
             return false;
+        }
 
         return true;
     }
@@ -561,6 +587,7 @@ public:
 
         swap(board[r1][c1], board[r2][c2]);
         print_board();
+        cout << endl;
         Sleep(3500);
 
         bool check = is_there_match();
@@ -575,25 +602,29 @@ public:
         {
             vector<pii> match = find_match();
 
+            score += match.size() * coef;
+
             for (auto cell : match)
                 board[cell.ff][cell.ss] = ' ';
 
             print_board();
+            cout << endl;
             Sleep(3500);
-
-            (coef >= 40) ? (coef += 2) : (coef *= 2);
 
             apply_gravity();
             print_board();
             cout << endl;
             Sleep(3500);
+
             refill();
             print_board();
             cout << endl;
-            Sleep(5000);
+            Sleep(4000);
 
             check = is_there_match();
         }
+
+        (coef >= 40) ? (coef += 2) : (coef *= 2);
 
         if (!is_valid_board())
             initialize();
@@ -607,10 +638,11 @@ int main()
     while (true)
     {
         cout << "Enter number of your choice:" << endl;
-        cout << "1.New Game\n2.Load Game\n3.Exit" << endl;
+        cout << "1.New Game\n2.Load Game\n3.Exit" << "\n\n";
 
         int choice;
         cin >> choice;
+        cout << endl;
 
         if (choice == 1)
         {
