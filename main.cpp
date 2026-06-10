@@ -13,6 +13,13 @@ using namespace std;
 #define CYAN "\e[0;36m"
 #define BROWN "\x1b[38;5;130m"
 #define PINK "\x1b[38;5;206m"
+#define ORANGE "\x1b[38;5;209m"
+#define GREENII "\x1b[38;5;184m"
+#define PURPLEII "\x1b[38;5;163m"
+#define GREENIII "\x1b[38;5;155m"
+#define BLUEII "\x1b[38;5;63m"
+#define ORANGEII "\x1b[38;5;9m"
+#define PINKII "\x1b[38;5;205m"
 #define RESET "\e[0m"
 #define ff first
 #define ss second
@@ -27,8 +34,8 @@ private:
     map<char, string> color_of_gems = {{'A', RED}, {'B', GREEN}, {'C', YELLOW}, {'D', BLUE}, {'E', PURPLE}, {'F', CYAN}, {'G', BROWN}, {'H', PINK}};
     vector<char> board[10];
     int score = 0, coef = 10;
-    int moves = 30;
-    string level = "Easy";
+    int moves, point_limit;
+    string level;
     bool mark[ROWS][COLS];
 
     bool create_initial_match(int row, int col)
@@ -397,6 +404,27 @@ private:
     }
 
 public:
+    Game(string l)
+    {
+        level = l;
+
+        if (level == "Easy")
+        {
+            moves = 50;
+            point_limit = 14720;
+        }
+        else if (level == "Medium")
+        {
+            moves = 30;
+            point_limit = 5830;
+        }
+        else
+        {
+            moves = 10;
+            point_limit = 3530;
+        }
+    }
+
     void initialize()
     {
         do
@@ -457,14 +485,37 @@ public:
 
     bool game_control()
     {
+        if (score >= point_limit)
+        {
+            cout << GREENII << "Congratulations!\nYou won." << RESET << endl;
+
+            Sleep(5000);
+            system("cls");
+
+            return false;
+        }
+
+        if (moves == 0)
+        {
+            if (score >= point_limit)
+                cout << GREENII << "Congratulations!\nYou won." << RESET << endl;
+            else
+                cout << RED << "Sorry!\nYou lost." << RED << endl;
+
+            Sleep(5000);
+            system("cls");
+
+            return false;
+        }
+
         for (int i = 0; i < 113; i++)
             cout << '*';
         cout << endl;
 
-        cout << "|\tScore: " << score << "\t|";
-        cout << "|\tRemaining Moves: " << moves << "\t|";
-        cout << "|\tLevel: " << level << "\t|";
-        cout << "|\tGem CasCade V.1.0\t|" << endl;
+        cout << GREEN << "|\tScore: " << score << "\t|" << RESET;
+        cout << YELLOW << "|\tRemaining Moves: " << moves << "\t|" << RESET;
+        cout << PINK << "|\tLevel: " << level << "\t|" << RESET;
+        cout << ORANGE << "|\tGoal Score: " << point_limit << "\t|" << RESET << endl;
 
         for (int i = 0; i < 113; i++)
             cout << '*';
@@ -477,7 +528,14 @@ public:
             cout << "*";
         cout << "\n\n";
 
-        cout << "[CONTROLS]:" << " W: Swap " << '|' << " H: Hint(-70 Score) " << '|' << " R: Rocket(-120 Score) " << '|' << " B: Bomb(-100 Score) " << '|' << " S: Save " << '|' << " Q: Quit" << endl;
+        cout << BLUEII << "[CONTROLS]:" << RESET;
+        cout << ORANGE << " W: Swap " << RESET << '|';
+        cout << GREENII << " H: Hint(-70 Score) " << RESET << '|';
+        cout << CYAN << " R: Rocket(-120 Score) " << RESET << '|';
+        cout << PURPLEII" B: Bomb(-100 Score) " << RESET << '|';
+        cout << YELLOW << " S: Save " << RESET << '|';
+        cout << RED << " Q: Quit" << RESET;
+
         cout << "\n\n";
 
         char choice;
@@ -486,13 +544,13 @@ public:
 
         if (choice == 'W')
         {
-            cout << "[INPUT]: " << "Enter First Row & Col:\n\n";
+            cout << BLUEII << "[INPUT]: " << "Enter First Row & Col:\n\n" << RESET;
 
             int r1, c1;
             cin >> r1 >> c1;
             cout << endl;
 
-            cout << "[INPUT]:" << " Enter Second Row & Col:\n\n";
+            cout << BLUEII << "[INPUT]:" << " Enter Second Row & Col:\n\n" << RESET;
 
             int r2, c2;
             cin >> r2 >> c2;
@@ -503,14 +561,16 @@ public:
             system("cls");
 
             if (!cascade(r1, c1, r2, c2))
-                cout << "Invalid Move!\n\n";
+                cout << RED << "Invalid Move!\n\n" << RESET;
+            else
+                moves--;
         }
 
         if (choice == 'B')
         {
             if (score >= 100)
             {
-                cout << "[INPUT]:" << " Enter Row & Col:\n\n";
+                cout << BLUEII << "[INPUT]:" << " Enter Row & Col:\n\n" << RESET;
 
                 int r, c;
                 cin >> r >> c;
@@ -520,7 +580,7 @@ public:
             }
             else
             {
-                cout << "[ERORR]:" << " Your score is less than 100.\n\n";
+                cout << RED << "[ERORR]:" << " Your score is less than 100.\n\n" << RESET;
             }
 
             Sleep(2000);
@@ -530,16 +590,16 @@ public:
         {
             if (score >= 120)
             {
-                cout << "[INPUT]:" << " Enter R or C:\n\n";
+                cout << BLUEII << "[INPUT]:" << " Enter R or C:\n\n" << RESET;
 
                 char type;
                 cin >> type;
                 cout << endl;
 
                 if (type == 'R')
-                    cout << "[INPUT]:" << " Enter Row Number:\n\n";
+                    cout << BLUEII << "[INPUT]:" << " Enter Row Number:\n\n" << RESET;
                 else
-                    cout << "[INPUT]:" << " Enter Col Number:\n\n";
+                    cout << BLUEII << "[INPUT]:" << " Enter Col Number:\n\n" << RESET;
 
                 int num;
                 cin >> num;
@@ -549,7 +609,7 @@ public:
             }
             else
             {
-                cout << "[ERORR]:" << " Your score is less than 120.\n\n";
+                cout << RED << "[ERORR]:" << " Your score is less than 120.\n\n" << RESET;
             }
 
             Sleep(2000);
@@ -561,11 +621,11 @@ public:
             {
                 vector<pii> v = hint();
 
-                cout << "[HINT]:" << "Swap " << v[0].ff << ' ' << v[0].ss << " with " << v[1].ff << ' ' << v[1].ss << "\n\n";
+                cout << GREENIII << "[HINT]:" << "Swap " << v[0].ff << ' ' << v[0].ss << " with " << v[1].ff << ' ' << v[1].ss << "\n\n" << RESET;
             }
             else
             {
-                cout << "[ERORR]:" << " Your score is less than 70.\n\n";
+                cout << RED << "[ERORR]:" << " Your score is less than 70.\n\n" << RESET;
             }
 
             Sleep(4000);
@@ -609,17 +669,17 @@ public:
 
             print_board();
             cout << endl;
-            Sleep(3500);
+            Sleep(2500);
 
             apply_gravity();
             print_board();
             cout << endl;
-            Sleep(3500);
+            Sleep(2500);
 
             refill();
             print_board();
             cout << endl;
-            Sleep(4000);
+            Sleep(3000);
 
             check = is_there_match();
         }
@@ -637,8 +697,8 @@ int main()
 {
     while (true)
     {
-        cout << "Enter number of your choice:" << endl;
-        cout << "1.New Game\n2.Load Game\n3.Exit" << "\n\n";
+        cout << ORANGE << "Enter number of your choice:" << RESET << endl;
+        cout << ORANGEII << "1.New Game\n2.Load Game\n3.Exit" << RESET << "\n\n";
 
         int choice;
         cin >> choice;
@@ -646,7 +706,15 @@ int main()
 
         if (choice == 1)
         {
-            Game g;
+            cout << PINK << "Choose the game level:" << RESET << endl;
+            cout << PINKII << "1.Easy\n2.Medium\n3.Hard" << RESET << "\n\n";
+
+            cin >> choice;
+            cout << endl;
+
+            string tmp[] = {"Easy", "Medium", "Hard"};
+
+            Game g(tmp[choice - 1]);
             g.initialize();
 
             while (true)
