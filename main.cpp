@@ -2,6 +2,7 @@
 #include <random>
 #include <windows.h>
 #include <stdlib.h>
+#include <fstream>
 
 using namespace std;
 
@@ -32,7 +33,7 @@ class Game
 private:
     char symbool[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
     map<char, string> color_of_gems = {{'A', RED}, {'B', GREEN}, {'C', YELLOW}, {'D', BLUE}, {'E', PURPLE}, {'F', CYAN}, {'G', BROWN}, {'H', PINK}};
-    vector<char> board[10];
+    vector<char> board[ROWS];
     int score = 0, coef = 10;
     int moves, point_limit;
     string level;
@@ -425,6 +426,58 @@ public:
         }
     }
 
+    void load_game()
+    {
+        ifstream my_file("gemcascade.txt");
+
+        string my_text;
+        vector<char> vc[ROWS];
+        int s, c, m;
+        string l;
+
+        int i = 0;
+        while (getline(my_file, my_text))
+        {
+            if (i < 64)
+            {
+                char arr[my_text.length() + 1];
+                strcpy(arr, my_text.c_str());
+
+                int j = i / 8;
+                vc[j].push_back(arr[0]);
+            }
+            else
+            {
+                if (i == 64)
+                {
+                    s = stoi(my_text);
+                }
+                if (i == 65)
+                {
+                    c = stoi(my_text);
+                }
+                if (i == 66)
+                {
+                    m = stoi(my_text);
+                }
+                if (i == 67)
+                {
+                    l = my_text;
+                }
+            }
+
+            i++;
+        }
+
+        level = l;
+        score = s;
+        coef = c;
+        moves = m;
+
+        for (int i = 0; i < ROWS; i++)
+            board[i] = vc[i];
+    }
+
     void initialize()
     {
         do
@@ -532,7 +585,7 @@ public:
         cout << ORANGE << " W: Swap " << RESET << '|';
         cout << GREENII << " H: Hint(-70 Score) " << RESET << '|';
         cout << CYAN << " R: Rocket(-120 Score) " << RESET << '|';
-        cout << PURPLEII" B: Bomb(-100 Score) " << RESET << '|';
+        cout << PURPLEII " B: Bomb(-100 Score) " << RESET << '|';
         cout << YELLOW << " S: Save " << RESET << '|';
         cout << RED << " Q: Quit" << RESET;
 
@@ -544,13 +597,15 @@ public:
 
         if (choice == 'W')
         {
-            cout << BLUEII << "[INPUT]: " << "Enter First Row & Col:\n\n" << RESET;
+            cout << BLUEII << "[INPUT]: " << "Enter First Row & Col:\n\n"
+                 << RESET;
 
             int r1, c1;
             cin >> r1 >> c1;
             cout << endl;
 
-            cout << BLUEII << "[INPUT]:" << " Enter Second Row & Col:\n\n" << RESET;
+            cout << BLUEII << "[INPUT]:" << " Enter Second Row & Col:\n\n"
+                 << RESET;
 
             int r2, c2;
             cin >> r2 >> c2;
@@ -561,16 +616,42 @@ public:
             system("cls");
 
             if (!cascade(r1, c1, r2, c2))
-                cout << RED << "Invalid Move!\n\n" << RESET;
+                cout << RED << "Invalid Move!\n\n"
+                     << RESET;
             else
                 moves--;
+        }
+
+        if (choice == 'S')
+        {
+            system("cls");
+
+            ofstream my_file("gemcascade.txt");
+            for (int i = 0; i < ROWS; i++)
+            {
+                for (int j = 0; j < COLS; j++)
+                {
+                    my_file << board[i][j] << '\n';
+                }
+            }
+
+            my_file << score << '\n'
+                    << coef << '\n'
+                    << moves << '\n'
+                    << level;
+
+            cout << GREENIII << "Game Saved!" << RESET << endl;
+            Sleep(3000);
+
+            my_file.close();
         }
 
         if (choice == 'B')
         {
             if (score >= 100)
             {
-                cout << BLUEII << "[INPUT]:" << " Enter Row & Col:\n\n" << RESET;
+                cout << BLUEII << "[INPUT]:" << " Enter Row & Col:\n\n"
+                     << RESET;
 
                 int r, c;
                 cin >> r >> c;
@@ -580,7 +661,8 @@ public:
             }
             else
             {
-                cout << RED << "[ERORR]:" << " Your score is less than 100.\n\n" << RESET;
+                cout << RED << "[ERORR]:" << " Your score is less than 100.\n\n"
+                     << RESET;
             }
 
             Sleep(2000);
@@ -590,16 +672,19 @@ public:
         {
             if (score >= 120)
             {
-                cout << BLUEII << "[INPUT]:" << " Enter R or C:\n\n" << RESET;
+                cout << BLUEII << "[INPUT]:" << " Enter R or C:\n\n"
+                     << RESET;
 
                 char type;
                 cin >> type;
                 cout << endl;
 
                 if (type == 'R')
-                    cout << BLUEII << "[INPUT]:" << " Enter Row Number:\n\n" << RESET;
+                    cout << BLUEII << "[INPUT]:" << " Enter Row Number:\n\n"
+                         << RESET;
                 else
-                    cout << BLUEII << "[INPUT]:" << " Enter Col Number:\n\n" << RESET;
+                    cout << BLUEII << "[INPUT]:" << " Enter Col Number:\n\n"
+                         << RESET;
 
                 int num;
                 cin >> num;
@@ -609,7 +694,8 @@ public:
             }
             else
             {
-                cout << RED << "[ERORR]:" << " Your score is less than 120.\n\n" << RESET;
+                cout << RED << "[ERORR]:" << " Your score is less than 120.\n\n"
+                     << RESET;
             }
 
             Sleep(2000);
@@ -621,11 +707,13 @@ public:
             {
                 vector<pii> v = hint();
 
-                cout << GREENIII << "[HINT]:" << "Swap " << v[0].ff << ' ' << v[0].ss << " with " << v[1].ff << ' ' << v[1].ss << "\n\n" << RESET;
+                cout << GREENIII << "[HINT]:" << "Swap " << v[0].ff << ' ' << v[0].ss << " with " << v[1].ff << ' ' << v[1].ss << "\n\n"
+                     << RESET;
             }
             else
             {
-                cout << RED << "[ERORR]:" << " Your score is less than 70.\n\n" << RESET;
+                cout << RED << "[ERORR]:" << " Your score is less than 70.\n\n"
+                     << RESET;
             }
 
             Sleep(4000);
@@ -714,8 +802,23 @@ int main()
 
             string tmp[] = {"Easy", "Medium", "Hard"};
 
+            vector<char> v[ROWS];
+
             Game g(tmp[choice - 1]);
             g.initialize();
+
+            while (true)
+            {
+                system("cls");
+
+                if (!g.game_control())
+                    break;
+            }
+        }
+        else if (choice == 2)
+        {
+            Game g("Easy");
+            g.load_game();
 
             while (true)
             {
