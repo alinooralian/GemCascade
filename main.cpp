@@ -404,6 +404,58 @@ private:
         return {{r1, c1}, {r2, c2}};
     }
 
+    bool cascade(int r1, int c1, int r2, int c2)
+    {
+        if (abs(r1 - r2) + abs(c1 - c2) != 1)
+            return false;
+
+        swap(board[r1][c1], board[r2][c2]);
+        print_board();
+        cout << endl;
+        Sleep(3000);
+
+        bool check = is_there_match();
+
+        if (!check)
+        {
+            swap(board[r1][c1], board[r2][c2]);
+            return false;
+        }
+
+        while (check)
+        {
+            vector<pii> match = find_match();
+
+            score += match.size() * coef;
+
+            for (auto cell : match)
+                board[cell.ff][cell.ss] = ' ';
+
+            print_board();
+            cout << endl;
+            Sleep(2500);
+
+            apply_gravity();
+            print_board();
+            cout << endl;
+            Sleep(2500);
+
+            refill();
+            print_board();
+            cout << endl;
+            Sleep(3000);
+
+            check = is_there_match();
+        }
+
+        (coef >= 40) ? (coef += 2) : (coef *= 2);
+
+        if (!is_valid_board())
+            initialize();
+
+        return true;
+    }
+
 public:
     Game(string l)
     {
@@ -426,9 +478,18 @@ public:
         }
     }
 
-    void load_game()
+    bool load_game()
     {
         ifstream my_file("gemcascade.txt");
+
+        if (!my_file.is_open())
+        {
+            system("cls");
+            cout << RED << "There is no unfinished game!" << RESET << endl;
+            Sleep(4000);
+
+            return false;
+        }
 
         string my_text;
         vector<char> vc[ROWS];
@@ -476,29 +537,52 @@ public:
 
         for (int i = 0; i < ROWS; i++)
             board[i] = vc[i];
+
+        return true;
     }
 
     void initialize()
     {
-        do
+        map<char, bool> mp;
+
+        while (true)
         {
-            for (int i = 0; i < ROWS; i++)
-                board[i].clear();
+            do
+            {
+                for (int i = 0; i < ROWS; i++)
+                    board[i].clear();
+
+                for (int i = 0; i < ROWS; i++)
+                {
+                    for (int j = 0; j < COLS; j++)
+                    {
+                        board[i].push_back(random_gem());
+                        while (create_initial_match(i, j))
+                        {
+                            board[i].pop_back();
+                            board[i].push_back(random_gem());
+                        }
+
+                        mp[board[i][j]] = true;
+                    }
+                }
+
+            } while (!is_valid_board());
+
+            bool check = true;
 
             for (int i = 0; i < ROWS; i++)
             {
-                for (int j = 0; j < COLS; j++)
+                if (!mp[symbool[i]])
                 {
-                    board[i].push_back(random_gem());
-                    while (create_initial_match(i, j))
-                    {
-                        board[i].pop_back();
-                        board[i].push_back(random_gem());
-                    }
+                    check = false;
+                    break;
                 }
             }
 
-        } while (!is_valid_board());
+            if (check)
+                break;
+        }
     }
 
     void vertical_line()
@@ -616,10 +700,16 @@ public:
             system("cls");
 
             if (!cascade(r1, c1, r2, c2))
+            {
                 cout << RED << "Invalid Move!\n\n"
                      << RESET;
+
+                Sleep(3000);
+            }
             else
+            {
                 moves--;
+            }
         }
 
         if (choice == 'S')
@@ -727,64 +817,14 @@ public:
 
         return true;
     }
-
-    bool cascade(int r1, int c1, int r2, int c2)
-    {
-        if (abs(r1 - r2) + abs(c1 - c2) != 1)
-            return false;
-
-        swap(board[r1][c1], board[r2][c2]);
-        print_board();
-        cout << endl;
-        Sleep(3500);
-
-        bool check = is_there_match();
-
-        if (!check)
-        {
-            swap(board[r1][c1], board[r2][c2]);
-            return false;
-        }
-
-        while (check)
-        {
-            vector<pii> match = find_match();
-
-            score += match.size() * coef;
-
-            for (auto cell : match)
-                board[cell.ff][cell.ss] = ' ';
-
-            print_board();
-            cout << endl;
-            Sleep(2500);
-
-            apply_gravity();
-            print_board();
-            cout << endl;
-            Sleep(2500);
-
-            refill();
-            print_board();
-            cout << endl;
-            Sleep(3000);
-
-            check = is_there_match();
-        }
-
-        (coef >= 40) ? (coef += 2) : (coef *= 2);
-
-        if (!is_valid_board())
-            initialize();
-
-        return true;
-    }
 };
 
 int main()
 {
     while (true)
     {
+        system("cls");
+
         cout << ORANGE << "Enter number of your choice:" << RESET << endl;
         cout << ORANGEII << "1.New Game\n2.Load Game\n3.Exit" << RESET << "\n\n";
 
@@ -792,17 +832,20 @@ int main()
         cin >> choice;
         cout << endl;
 
+        system("cls");
+
         if (choice == 1)
         {
             cout << PINK << "Choose the game level:" << RESET << endl;
-            cout << PINKII << "1.Easy\n2.Medium\n3.Hard" << RESET << "\n\n";
+            cout << PINKII << "1.Easy\n2.Medium\n3.Hard\n4.Back" << RESET << "\n\n";
 
             cin >> choice;
             cout << endl;
 
-            string tmp[] = {"Easy", "Medium", "Hard"};
+            if (choice == 4)
+                continue;
 
-            vector<char> v[ROWS];
+            string tmp[] = {"Easy", "Medium", "Hard"};
 
             Game g(tmp[choice - 1]);
             g.initialize();
@@ -818,7 +861,9 @@ int main()
         else if (choice == 2)
         {
             Game g("Easy");
-            g.load_game();
+
+            if (!g.load_game())
+                continue;
 
             while (true)
             {
