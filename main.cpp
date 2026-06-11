@@ -58,7 +58,7 @@ private:
             if (board[row][col] == board[row][col - 1] && board[row][col] == board[row - 1][col])
                 return true;
 
-            if (board[row][col] == board[row][col - 1] && board[row - 1][col - 1])
+            if (board[row][col] == board[row][col - 1] && board[row][col] == board[row - 1][col - 1])
                 return true;
 
             if (board[row][col] == board[row - 1][col] && board[row][col] == board[row - 1][col - 1])
@@ -173,7 +173,7 @@ private:
 
     vector<pii> find_match()
     {
-        vector<pii> match;
+        set<pii> match;
 
         for (int i = 0; i < ROWS; i++)
             for (int j = 0; j < COLS; j++)
@@ -211,8 +211,6 @@ private:
 
                         for (int c = 0; c < COLS; c++)
                             vc.push_back({r, c});
-
-                        cnt = 8;
                     }
 
                     if (check_col)
@@ -221,8 +219,6 @@ private:
 
                         for (int r = 0; r < ROWS; r++)
                             vc.push_back({r, c});
-
-                        cnt = 8;
                     }
                 }
 
@@ -234,16 +230,16 @@ private:
                         for (int c = 0; c < COLS; c++)
                             if (board[r][c] == target)
                                 vc.push_back({r, c});
-
-                    cnt = vc.size() - 5;
                 }
 
                 for (auto cell : vc)
-                    match.push_back(cell);
+                    match.insert(cell);
             }
         }
 
-        return match;
+        vector<pii> v(match.begin(), match.end());
+
+        return v;
     }
 
     void apply_gravity()
@@ -315,23 +311,21 @@ private:
     {
         score -= 100;
 
-        int tmp[3] = {0, 1, -1};
+        int dr[] = {-1, 1, 0};
+        int dc[] = {0, -1, 1};
 
         for (int i = 0; i < 3; i++)
         {
-            int r = row + tmp[i];
-            int c = col;
+            for (int j = 0; j < 3; j++)
+            {
+                int r = row + dr[i];
+                int c = col + dc[j];
 
-            if (r == COLS || r == -1)
-                continue;
+                if (r >= ROWS || r < 0 || c < 0 || c >= COLS)
+                    continue;
 
-            board[r][c] = ' ';
-
-            if (c > 0)
-                board[r][c - 1] = ' ';
-
-            if (c < COLS - 1)
-                board[r][c + 1] = ' ';
+                board[r][c] = ' ';
+            }
         }
 
         if (row > 0)
@@ -538,6 +532,8 @@ public:
         for (int i = 0; i < ROWS; i++)
             board[i] = vc[i];
 
+        my_file.close();
+
         return true;
     }
 
@@ -669,7 +665,7 @@ public:
         cout << ORANGE << " W: Swap " << RESET << '|';
         cout << GREENII << " H: Hint(-70 Score) " << RESET << '|';
         cout << CYAN << " R: Rocket(-120 Score) " << RESET << '|';
-        cout << PURPLEII " B: Bomb(-100 Score) " << RESET << '|';
+        cout << PURPLEII << " B: Bomb(-100 Score) " << RESET << '|';
         cout << YELLOW << " S: Save " << RESET << '|';
         cout << RED << " Q: Quit" << RESET;
 
@@ -717,6 +713,7 @@ public:
             system("cls");
 
             ofstream my_file("gemcascade.txt");
+
             for (int i = 0; i < ROWS; i++)
             {
                 for (int j = 0; j < COLS; j++)
@@ -826,7 +823,7 @@ int main()
         system("cls");
 
         cout << ORANGE << "Enter number of your choice:" << RESET << endl;
-        cout << ORANGEII << "1.New Game\n2.Load Game\n3.Exit" << RESET << "\n\n";
+        cout << ORANGEII << "1.New Game\n2.Load Game\n3.About this game\n4.Exit" << RESET << "\n\n";
 
         int choice;
         cin >> choice;
@@ -873,7 +870,27 @@ int main()
                     break;
             }
         }
-        else if (choice == 3)
+        else if(choice == 3)
+        {
+            ifstream my_file("about_game.txt");
+
+            string my_text;
+
+            while(getline(my_file, my_text))
+            {
+                cout << my_text << endl;
+            }
+
+            my_file.close();
+
+            cout << "\n\n";
+
+            cout << YELLOW << "Enter Q and Press ENTER for return." << RESET << endl;
+
+            char c;
+            cin >> c;
+        }
+        else if (choice == 4)
         {
             return 0;
         }
