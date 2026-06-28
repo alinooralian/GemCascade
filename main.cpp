@@ -32,7 +32,7 @@ class Game
 {
 private:
     char symbool[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
-    map<char, string> color_of_gems = {{'A', RED}, {'B', GREEN}, {'C', YELLOW}, {'D', BLUE}, {'E', PURPLE}, {'F', CYAN}, {'G', BROWN}, {'H', PINK}};
+    map<char, string> gems = {{'A', "🍓"}, {'B', "🥕"}, {'C', "🍉"}, {'D', "🍋"}, {'E', "🍇"}, {'F', "🌽"}, {'G', "🥝"}, {'H', "🍒"}, {' ', "  "}};
     vector<char> board[ROWS];
     int score = 0, coef = 10;
     int moves, point_limit;
@@ -585,9 +585,10 @@ public:
     {
         cout << "  ";
 
-        for (int i = 0; i < COLS; i++)
-            cout << "+-----";
-        cout << "+" << endl;
+        cout << "╠══════";
+        for (int i = 1; i < COLS; i++)
+            cout << "╬══════";
+        cout << "╣" << endl;
     }
 
     void horizontal_line(int row)
@@ -595,9 +596,9 @@ public:
         cout << row << " ";
 
         for (int i = 0; i < COLS; i++)
-            cout << "|" << "  " << color_of_gems[board[row][i]] << board[row][i] << RESET << "  ";
+            cout << "║" << "  " << gems[board[row][i]] << "  ";
 
-        cout << "|" << endl;
+        cout << "║" << endl;
     }
 
     void print_board()
@@ -605,15 +606,27 @@ public:
         cout << "  ";
 
         for (int i = 0; i < COLS; i++)
-            cout << "   " << i << "  ";
+            cout << "    " << i << "  ";
         cout << endl;
+
+        cout << "  ";
+        cout << "╔══════";
+        for (int i = 1; i < COLS; i++)
+            cout << "╦══════";
+        cout << "╗" << endl;
 
         for (int i = 0; i < ROWS; i++)
         {
-            vertical_line();
+            if (i != 0)
+                vertical_line();
             horizontal_line(i);
         }
-        vertical_line();
+
+        cout << "  ";
+        cout << "╚══════";
+        for (int i = 1; i < COLS; i++)
+            cout << "╩══════";
+        cout << "╝" << endl;
     }
 
     bool game_control()
@@ -641,33 +654,37 @@ public:
             return false;
         }
 
-        for (int i = 0; i < 113; i++)
-            cout << '*';
+        cout << "╔";
+        for (int i = 0; i < 111; i++)
+            cout << "═";
+        cout << "╗";
         cout << endl;
 
-        cout << GREEN << "|\tScore: " << score << "\t|" << RESET;
-        cout << YELLOW << "|\tRemaining Moves: " << moves << "\t|" << RESET;
-        cout << PINK << "|\tLevel: " << level << "\t|" << RESET;
-        cout << ORANGE << "|\tGoal Score: " << point_limit << "\t|" << RESET << endl;
+        cout << "║" << GREEN << "\t🏆Score: " << score << '\t' << RESET;
+        cout << "║" << YELLOW << "\t⏳Remaining Moves: " << moves << '\t' << RESET;
+        cout << "║" << PINK << "\t⚔️Level: " << level << '\t' << RESET;
+        cout << "║" << ORANGE << "\t🎯Goal Score: " << point_limit << '\t' << RESET << "║" << endl;
 
-        for (int i = 0; i < 113; i++)
-            cout << '*';
+        cout << "╚";
+        for (int i = 0; i < 111; i++)
+            cout << "═";
+        cout << "╝";
         cout << "\n\n";
 
         print_board();
 
         cout << "\n\n";
         for (int i = 0; i < 120; i++)
-            cout << "*";
+            cout << "═";
         cout << "\n\n";
 
         cout << BLUEII << "[CONTROLS]:" << RESET;
-        cout << ORANGE << " W: Swap " << RESET << '|';
-        cout << GREENII << " H: Hint(-70 Score) " << RESET << '|';
-        cout << CYAN << " R: Rocket(-120 Score) " << RESET << '|';
-        cout << PURPLEII << " B: Bomb(-100 Score) " << RESET << '|';
-        cout << YELLOW << " S: Save " << RESET << '|';
-        cout << RED << " Q: Quit" << RESET;
+        cout << ORANGE << " W: 🔄Swap " << RESET << "║";
+        cout << GREENII << " H: 💡Hint(-70 Score) " << RESET << "║";
+        cout << CYAN << " R: 🚀Rocket(-120 Score) " << RESET << "║";
+        cout << PURPLEII << " B: 💣Bomb(-100 Score) " << RESET << "║";
+        cout << YELLOW << " S: 💾Save " << RESET << "║";
+        cout << RED << " Q: 🔚Quit" << RESET;
 
         cout << "\n\n";
 
@@ -675,7 +692,7 @@ public:
         cin >> choice;
         cout << endl;
 
-        if (choice == 'W')
+        if (choice == 'W' || choice == 'w')
         {
             cout << BLUEII << "[INPUT]: " << "Enter First Row & Col:\n\n"
                  << RESET;
@@ -708,7 +725,7 @@ public:
             }
         }
 
-        if (choice == 'S')
+        if (choice == 'S' || choice == 's')
         {
             system("cls");
 
@@ -733,7 +750,7 @@ public:
             my_file.close();
         }
 
-        if (choice == 'B')
+        if (choice == 'B' || choice == 'b')
         {
             if (score >= 100)
             {
@@ -745,6 +762,8 @@ public:
                 cout << endl;
 
                 bomb(r, c);
+
+                moves--;
             }
             else
             {
@@ -755,7 +774,7 @@ public:
             Sleep(2000);
         }
 
-        if (choice == 'R')
+        if (choice == 'R' || choice == 'r')
         {
             if (score >= 120)
             {
@@ -766,7 +785,7 @@ public:
                 cin >> type;
                 cout << endl;
 
-                if (type == 'R')
+                if (type == 'R' || type == 'r')
                     cout << BLUEII << "[INPUT]:" << " Enter Row Number:\n\n"
                          << RESET;
                 else
@@ -778,6 +797,8 @@ public:
                 cout << endl;
 
                 rocket(type, num);
+
+                moves--;
             }
             else
             {
@@ -788,7 +809,7 @@ public:
             Sleep(2000);
         }
 
-        if (choice == 'H')
+        if (choice == 'H' || choice == 'h')
         {
             if (score >= 70)
             {
@@ -806,7 +827,7 @@ public:
             Sleep(4000);
         }
 
-        if (choice == 'Q')
+        if (choice == 'Q' || choice == 'q')
         {
             system("cls");
             return false;
@@ -818,6 +839,7 @@ public:
 
 int main()
 {
+    SetConsoleOutputCP(CP_UTF8);
     while (true)
     {
         system("cls");
@@ -870,13 +892,13 @@ int main()
                     break;
             }
         }
-        else if(choice == 3)
+        else if (choice == 3)
         {
             ifstream my_file("about_game.txt");
 
             string my_text;
 
-            while(getline(my_file, my_text))
+            while (getline(my_file, my_text))
             {
                 cout << my_text << endl;
             }
