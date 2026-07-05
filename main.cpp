@@ -33,19 +33,29 @@ const int error_delay = 4000;
 const int process_delay = 3500;
 const int loading_delay = 2500;
 
-class Game
+class RndomGemGenerator
 {
 private:
     char symbool[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
-    map<char, string> gems = {{'A', "🍓"}, {'B', "🥕"}, {'C', "🍉"}, {'D', "🍋"}, {'E', "🍇"}, {'F', "🌽"}, {'G', "🥝"}, {'H', "🍒"}, {' ', "  "}};
-    vector<vector<char>> board{ROWS, vector<char>(COLS)};
-    int score = 0, coef = 10;
-    int bomb_cost = 100, rocket_cost = 120, hint_cost = 70;
-    int moves, goal_score;
-    string level;
-    bool mark[ROWS][COLS];
-
     mt19937 gen{random_device{}()};
+
+public:
+    char generator()
+    {
+        uniform_int_distribution<> dist(0, 7);
+
+        int rand_idx = dist(gen);
+        return symbool[rand_idx];
+    }
+};
+
+class Board
+{
+private:
+    char symbool[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
+    RndomGemGenerator random_gem_generator;
+    vector<vector<char>> board;
+    bool mark[ROWS][COLS];
 
     bool create_initial_match(int row, int col)
     {
@@ -82,19 +92,9 @@ private:
         return false;
     }
 
-    char random_gem()
-    {
-        uniform_int_distribution<> dist(0, 7);
-
-        int rand_idx = dist(gen);
-
-        return symbool[rand_idx];
-    }
-
     void dfs(int row, int col, vector<pii> &vc)
     {
         vc.push_back({row, col});
-
         mark[row][col] = true;
 
         int dr[] = {-1, 1, 0, 0};
@@ -116,6 +116,61 @@ private:
 
             dfs(r, c, vc);
         }
+    }
+
+public:
+    Board()
+    {
+        board = vector<vector<char>>(ROWS, vector<char>(COLS, ' '));
+    }
+
+    string get_emoji(char c)
+    {
+        if (c == 'A')
+            return "🍓";
+        if (c == 'B')
+            return "🥕";
+        if (c == 'C')
+            return "🍉";
+        if (c == 'D')
+            return "🍋";
+        if (c == 'E')
+            return "🍇";
+        if (c == 'F')
+            return "🌽";
+        if (c == 'G')
+            return "🥝";
+        if (c == 'H')
+            return "🍒";
+        return "  ";
+    }
+
+    vector<vector<char>> get_board_copy()
+    {
+        return board;
+    }
+
+    void set_board(vector<vector<char>> b)
+    {
+        board = b;
+    }
+
+    char get_cell(int r, int c)
+    {
+        if (r >= 0 && r < ROWS && c >= 0 && c < COLS)
+            return board[r][c];
+        return ' ';
+    }
+
+    void set_cell(int r, int c, char ch)
+    {
+        if (r >= 0 && r < ROWS && c >= 0 && c < COLS)
+            board[r][c] = ch;
+    }
+
+    void swap_cells(int r1, int c1, int r2, int c2)
+    {
+        swap(board[r1][c1], board[r2][c2]);
     }
 
     bool is_there_match()
@@ -251,7 +306,9 @@ private:
         {
             while (true)
             {
-                int first_empty_cell = ROWS + 1, last_not_empty_cell = ROWS + 1;
+                int first_empty_cell = ROWS + 1;
+                int last_not_empty = ROWS + 1;
+
                 for (int i = ROWS - 1; i >= 0; i--)
                 {
                     if (board[i][j] == ' ')
@@ -268,30 +325,28 @@ private:
                 {
                     if (board[i][j] != ' ')
                     {
-                        last_not_empty_cell = i;
+                        last_not_empty = i;
                         break;
                     }
                 }
 
-                if (last_not_empty_cell != ROWS + 1)
+                if (last_not_empty != ROWS + 1)
                 {
-                    while (last_not_empty_cell >= 0)
+                    while (last_not_empty >= 0)
                     {
-                        if (board[last_not_empty_cell][j] == ' ')
+                        if (board[last_not_empty][j] == ' ')
                             break;
 
                         if (board[first_empty_cell][j] != ' ')
                             break;
 
-                        swap(board[first_empty_cell][j], board[last_not_empty_cell][j]);
+                        swap(board[first_empty_cell][j], board[last_not_empty][j]);
                         first_empty_cell--;
-                        last_not_empty_cell--;
+                        last_not_empty--;
                     }
                 }
                 else
-                {
                     break;
-                }
             }
         }
     }
@@ -305,15 +360,144 @@ private:
                 if (board[i][j] != ' ')
                     break;
 
-                board[i][j] = random_gem();
+                board[i][j] = random_gem_generator.generator();
             }
         }
     }
 
-    void bomb(int row, int col)
+    void initialize()
     {
-        score -= bomb_cost;
+        map<char, bool> mp;
 
+        while (true)
+        {
+            do
+            {
+                for (int i = 0; i < ROWS; i++)
+                {
+                    for (int j = 0; j < COLS; j++)
+                    {
+                        do
+                        {
+                            board[i][j] = random_gem_generator.generator();
+                        } while (create_initial_match(i, j));
+
+                        mp[board[i][j]] = true;
+                    }
+                }
+
+            } while (!is_valid_board());
+
+            bool check = true;
+
+            for (int i = 0; i < ROWS; i++)
+            {
+                if (!mp[symbool[i]])
+                {
+                    check = false;
+                    break;
+                }
+            }
+
+            if (check)
+                break;
+        }
+    }
+};
+
+class Renderer
+{
+public:
+    void vertical_line()
+    {
+        cout << "  ";
+
+        cout << "╠══════";
+        for (int i = 1; i < COLS; i++)
+            cout << "╬══════";
+        cout << "╣" << endl;
+    }
+
+    void horizontal_line(int row, Board b)
+    {
+        vector<vector<char>> board = b.get_board_copy();
+
+        cout << row << " ";
+
+        for (int i = 0; i < COLS; i++)
+            cout << "║" << "  " << b.get_emoji(board[row][i]) << "  ";
+
+        cout << "║" << endl;
+    }
+
+    void print_board(Board b)
+    {
+        cout << "  ";
+
+        for (int i = 0; i < COLS; i++)
+            cout << "    " << i << "  ";
+        cout << endl;
+
+        cout << "  ";
+        cout << "╔══════";
+        for (int i = 1; i < COLS; i++)
+            cout << "╦══════";
+        cout << "╗" << endl;
+
+        for (int i = 0; i < ROWS; i++)
+        {
+            if (i != 0)
+                vertical_line();
+            horizontal_line(i, b);
+        }
+
+        cout << "  ";
+        cout << "╚══════";
+        for (int i = 1; i < COLS; i++)
+            cout << "╩══════";
+        cout << "╝" << endl;
+    }
+
+    void print_header(int score, int moves, string level, int goal_score)
+    {
+        cout << "╔";
+        for (int i = 0; i < 111; i++)
+            cout << "═";
+        cout << "╗" << endl;
+
+        cout << "║" << GREEN << "\t🏆Score: " << score << '\t' << RESET;
+        cout << "║" << YELLOW << "\t⏳Remaining Moves: " << moves << '\t' << RESET;
+        cout << "║" << PINK << "\t⚔️Level: " << level << '\t' << RESET;
+        cout << "║" << ORANGE << "\t🎯Goal Score: " << goal_score << '\t' << RESET << "║" << endl;
+
+        cout << "╚";
+        for (int i = 0; i < 111; i++)
+            cout << "═";
+        cout << "╝" << "\n\n";
+    }
+
+    void print_controller(int hint_cost, int rocket_cost, int bomb_cost)
+    {
+        cout << "\n\n";
+        for (int i = 0; i < 120; i++)
+            cout << "═";
+        cout << "\n\n";
+
+        cout << BLUEII << "[CONTROLS]:" << RESET;
+        cout << ORANGE << " W: 🔄Swap " << RESET << "║";
+        cout << GREENII << " H: 💡Hint(-" << hint_cost << " Score) " << RESET << "║";
+        cout << CYAN << " R: 🚀Rocket(-" << rocket_cost << " Score) " << RESET << "║";
+        cout << PURPLEII << " B: 💣Bomb(-" << bomb_cost << " Score) " << RESET << "║";
+        cout << YELLOW << " S: 💾Save " << RESET << "║";
+        cout << RED << " Q: 🔚Quit" << RESET << "\n\n";
+    }
+};
+
+class PowerUpManger
+{
+public:
+    void bomb(int row, int col, Board &b)
+    {
         int dr[] = {-1, 1, 0};
         int dc[] = {0, -1, 1};
 
@@ -327,40 +511,27 @@ private:
                 if (r >= ROWS || r < 0 || c < 0 || c >= COLS)
                     continue;
 
-                board[r][c] = ' ';
+                b.set_cell(r, c, ' ');
             }
         }
-
-        if (row > 0)
-            cascade(row, col, row - 1, col);
-        else
-            cascade(row, col, row + 1, col);
     }
 
-    void rocket(char type, int num)
+    void rocket(char type, int num, Board &b)
     {
-        score -= rocket_cost;
-
-        if (type == 'R')
+        if (type == 'R' || type == 'r')
         {
             for (int j = 0; j < COLS; j++)
-                board[num][j] = ' ';
-
-            cascade(num, 0, num, 1);
+                b.set_cell(num, j, ' ');
         }
         else
         {
             for (int i = 0; i < ROWS; i++)
-                board[i][num] = ' ';
-
-            cascade(0, num, 1, num);
+                b.set_cell(i, num, ' ');
         }
     }
 
-    vector<pii> hint()
+    vector<pii> hint(Board &b)
     {
-        score -= hint_cost;
-
         int max_size = 0;
         int r1, r2;
         int c1, c2;
@@ -371,9 +542,9 @@ private:
             {
                 if (j != 0)
                 {
-                    swap(board[i][j], board[i][j - 1]);
-                    auto tmp = find_match();
-                    swap(board[i][j], board[i][j - 1]);
+                    b.swap_cells(i, j, i, j - 1);
+                    auto tmp = b.find_match();
+                    b.swap_cells(i, j, i, j - 1);
 
                     if (tmp.size() > max_size)
                     {
@@ -385,9 +556,9 @@ private:
 
                 if (i != 0)
                 {
-                    swap(board[i][j], board[i - 1][j]);
-                    auto tmp = find_match();
-                    swap(board[i][j], board[i - 1][j]);
+                    b.swap_cells(i, j, i - 1, j);
+                    auto tmp = b.find_match();
+                    b.swap_cells(i, j, i - 1, j);
 
                     if (tmp.size() > max_size)
                     {
@@ -401,60 +572,40 @@ private:
 
         return {{r1, c1}, {r2, c2}};
     }
-
-    bool cascade(int r1, int c1, int r2, int c2)
+};
+class GameSaver
+{
+public:
+    bool save_game(string level, int coef, int score, int moves, Board b)
     {
-        coef = 10;
+        system("cls");
 
-        if (abs(r1 - r2) + abs(c1 - c2) != 1)
-            return false;
+        ofstream my_file("gemcascade.txt");
 
-        swap(board[r1][c1], board[r2][c2]);
-        print_board();
-        cout << endl;
-        Sleep(swap_delay);
+        vector<vector<char>> board = b.get_board_copy();
 
-        bool check = is_there_match();
+        for (int i = 0; i < ROWS; i++)
+            for (int j = 0; j < COLS; j++)
+                my_file << board[i][j] << '\n';
 
-        if (!check)
-        {
-            swap(board[r1][c1], board[r2][c2]);
-            return false;
-        }
+        my_file << score << '\n'
+                << coef << '\n'
+                << moves << '\n'
+                << level;
 
-        while (check)
-        {
-            vector<pii> match = find_match();
-
-            score += match.size() * coef;
-
-            for (auto cell : match)
-                board[cell.ff][cell.ss] = ' ';
-
-            print_board();
-            cout << endl;
-            Sleep(loading_delay);
-
-            apply_gravity();
-            print_board();
-            cout << endl;
-            Sleep(loading_delay);
-
-            refill();
-            print_board();
-            cout << endl;
-            Sleep(cascade_delay);
-
-            check = is_there_match();
-        }
-
-        (coef >= 40) ? (coef += 2) : (coef *= 2);
-
-        if (!is_valid_board())
-            initialize();
+        my_file.close();
 
         return true;
     }
+};
+
+class Game
+{
+private:
+    Board board;
+    Renderer renderer;
+    int score, coef, moves, goal_score, bomb_cost, rocket_cost, hint_cost;
+    string level;
 
     bool validation(int r1, int c1, int r2, int c2)
     {
@@ -462,6 +613,57 @@ private:
             return false;
         if (c1 >= COLS || c2 >= COLS || c1 < 0 || c2 < 0)
             return false;
+        return true;
+    }
+
+    bool cascade(int r1, int c1, int r2, int c2)
+    {
+        if (abs(r1 - r2) + abs(c1 - c2) != 1)
+            return false;
+
+        board.swap_cells(r1, c1, r2, c2);
+        renderer.print_board(board);
+        cout << endl;
+        Sleep(swap_delay);
+
+        bool check = board.is_there_match();
+
+        if (!check)
+        {
+            board.swap_cells(r1, c1, r2, c2);
+            return false;
+        }
+
+        while (check)
+        {
+            vector<pii> match = board.find_match();
+            score += match.size() * coef;
+
+            for (auto cell : match)
+                board.set_cell(cell.ff, cell.ss, ' ');
+
+            renderer.print_board(board);
+            cout << endl;
+            Sleep(loading_delay);
+
+            board.apply_gravity();
+            renderer.print_board(board);
+            cout << endl;
+            Sleep(loading_delay);
+
+            board.refill();
+            renderer.print_board(board);
+            cout << endl;
+            Sleep(cascade_delay);
+
+            check = board.is_there_match();
+        }
+
+        (coef >= 40) ? (coef += 2) : (coef *= 2);
+
+        if (!board.is_valid_board())
+            board.initialize();
+
         return true;
     }
 
@@ -482,7 +684,7 @@ private:
             if (score >= goal_score)
                 cout << GREENII << "Congratulations!\nYou won." << RESET << endl;
             else
-                cout << RED << "Sorry!\nYou lost." << RED << endl;
+                cout << RED << "Sorry!\nYou lost." << RESET << endl;
 
             Sleep(error_delay);
             system("cls");
@@ -497,25 +699,277 @@ public:
     Game(string l)
     {
         level = l;
+        score = 0;
+        coef = 10;
+        bomb_cost = 100;
+        rocket_cost = 120;
+        hint_cost = 70;
 
         if (level == "Easy")
         {
             moves = 50;
-            goal_score = 14720;
+            goal_score = 14700;
         }
         else if (level == "Medium")
         {
             moves = 30;
-            goal_score = 5830;
+            goal_score = 5800;
         }
         else
         {
             moves = 10;
-            goal_score = 3530;
+            goal_score = 3500;
         }
     }
 
-    bool load_game()
+    void set_level(string l)
+    {
+        level = l;
+    }
+
+    void set_coef(int c)
+    {
+        coef = c;
+    }
+
+    void set_score(int s)
+    {
+        score = s;
+    }
+
+    void set_moves(int m)
+    {
+        moves = m;
+    }
+
+    void set_board(vector<vector<char>> b)
+    {
+        board.set_board(b);
+    }
+
+    void initialize()
+    {
+        board.initialize();
+    }
+
+    void swap_handler()
+    {
+        cout << BLUEII << "[INPUT]: Enter First Row & Col(r1 c1):\n\n"
+             << RESET;
+
+        int r1, c1;
+        cin >> r1 >> c1;
+        cout << endl;
+
+        cout << BLUEII << "[INPUT]: Enter Second Row & Col(r2 c2):\n\n"
+             << RESET;
+
+        int r2, c2;
+        cin >> r2 >> c2;
+        cout << endl;
+
+        Sleep(loading_delay);
+        system("cls");
+
+        if (!validation(r1, c1, r2, c2))
+        {
+            cout << RED << "[ERROR]: Your inputs are invalid!\n\n"
+                 << RESET;
+            Sleep(error_delay);
+        }
+
+        if (!cascade(r1, c1, r2, c2))
+        {
+            cout << RED << "Invalid Move!\n\n"
+                 << RESET;
+            Sleep(error_delay);
+        }
+        else
+            moves--;
+    }
+
+    void save_handler()
+    {
+        GameSaver gs;
+
+        if (gs.save_game(level, coef, score, moves, board))
+        {
+            cout << GREENIII << "Game Saved!" << RESET << endl;
+            Sleep(process_delay);
+        }
+    }
+
+    void bomb_handler()
+    {
+        if (score >= bomb_cost)
+        {
+            PowerUpManger pu;
+
+            cout << BLUEII << "[INPUT]:" << " Enter Row & Col(r c):\n\n"
+                 << RESET;
+
+            int r, c;
+            cin >> r >> c;
+            cout << endl;
+
+            system("cls");
+
+            if (!validation(r, c, 0, 0))
+            {
+                cout << RED << "[ERROR]: Your inputs are invalid!\n\n"
+                     << RESET;
+
+                Sleep(error_delay);
+
+                return;
+            }
+
+            score -= bomb_cost;
+            pu.bomb(r, c, board);
+            moves--;
+
+            if (r > 0)
+                cascade(r, c, r - 1, c);
+            else
+                cascade(r, c, r + 1, c);
+        }
+        else
+        {
+            cout << RED << "[ERORR]:" << " Your score is less than 100.\n\n"
+                 << RESET;
+        }
+
+        Sleep(process_delay);
+    }
+
+    void rocket_handler()
+    {
+        if (score >= rocket_cost)
+        {
+            PowerUpManger pu;
+
+            cout << BLUEII << "[INPUT]:" << " Enter R or C:\n\n"
+                 << RESET;
+
+            char type;
+            cin >> type;
+            cout << endl;
+
+            if (type != 'C' && type != 'c' && type != 'R' && type != 'r')
+            {
+                cout << RED << "[ERROR]: Your input is invalid!\n\n"
+                     << RESET;
+
+                Sleep(error_delay);
+
+                return;
+            }
+
+            if (type == 'R' || type == 'r')
+                cout << BLUEII << "[INPUT]:" << " Enter Row Number(r):\n\n"
+                     << RESET;
+            else
+                cout << BLUEII << "[INPUT]:" << " Enter Col Number(c):\n\n"
+                     << RESET;
+
+            int num;
+            cin >> num;
+            cout << endl;
+
+            system("cls");
+
+            if (!validation(num, 0, 0, 0))
+            {
+                cout << RED << "[ERROR]: Your input is invalid!\n\n"
+                     << RESET;
+
+                Sleep(error_delay);
+
+                return;
+            }
+
+            pu.rocket(type, num, board);
+            score -= rocket_cost;
+            moves--;
+
+            if (type == 'R' || type == 'r')
+                cascade(num, 0, num, 1);
+            else
+                cascade(0, num, 1, num);
+        }
+        else
+        {
+            cout << RED << "[ERORR]:" << " Your score is less than 120.\n\n"
+                 << RESET;
+        }
+
+        Sleep(process_delay);
+    }
+
+    void hint_handler()
+    {
+        if (score >= hint_cost)
+        {
+            PowerUpManger pu;
+
+            vector<pii> v = pu.hint(board);
+            score -= hint_cost;
+
+            cout << GREENIII << "[HINT]:" << "Swap " << v[0].ff << ' ' << v[0].ss << " with " << v[1].ff << ' ' << v[1].ss << "\n\n"
+                 << RESET;
+        }
+        else
+        {
+            cout << RED << "[ERORR]:" << " Your score is less than 70.\n\n"
+                 << RESET;
+        }
+
+        Sleep(error_delay);
+    }
+
+    bool game_control()
+    {
+        if (win_status())
+            return false;
+
+        renderer.print_header(score, moves, level, goal_score);
+        renderer.print_board(board);
+        renderer.print_controller(hint_cost, rocket_cost, bomb_cost);
+
+        char choice;
+        cin >> choice;
+        cout << endl;
+
+        if (choice == 'W' || choice == 'w')
+            swap_handler();
+        else if (choice == 'S' || choice == 's')
+            save_handler();
+        else if (choice == 'B' || choice == 'b')
+            bomb_handler();
+        else if (choice == 'R' || choice == 'r')
+            rocket_handler();
+        else if (choice == 'H' || choice == 'h')
+            hint_handler();
+        else if (choice == 'Q' || choice == 'q')
+        {
+            system("cls");
+            return false;
+        }
+        else
+        {
+            cout << RED << "[ERROR]: Your input is invalid!\n\n"
+                 << RESET;
+            Sleep(error_delay);
+        }
+
+        return true;
+    }
+};
+
+class GameLoader
+{
+public:
+    bool load_game(Game &g)
     {
         ifstream my_file("gemcascade.txt");
 
@@ -544,371 +998,31 @@ public:
             else
             {
                 if (i == 64)
-                {
                     s = stoi(my_text);
-                }
                 if (i == 65)
-                {
                     c = stoi(my_text);
-                }
                 if (i == 66)
-                {
                     m = stoi(my_text);
-                }
                 if (i == 67)
-                {
                     l = my_text;
-                }
             }
 
             i++;
         }
 
-        level = l;
-        score = s;
-        coef = c;
-        moves = m;
+        g.set_level(l);
+        g.set_coef(c);
+        g.set_score(s);
+        g.set_moves(m);
 
-        for (int i = 0; i < ROWS; i++)
-            board[i] = vc[i];
+        vector<vector<char>> b(ROWS, vector<char>(COLS));
+        for (int row = 0; row < ROWS; row++)
+            for (int col = 0; col < COLS; col++)
+                b[row][col] = vc[row][col];
 
-        my_file.close();
-
-        return true;
-    }
-
-    void initialize()
-    {
-        map<char, bool> mp;
-
-        while (true)
-        {
-            do
-            {
-                for (int i = 0; i < ROWS; i++)
-                {
-                    for (int j = 0; j < COLS; j++)
-                    {
-                        do
-                        {
-                            board[i][j] = random_gem();
-                        } while (create_initial_match(i, j));
-
-                        mp[board[i][j]] = true;
-                    }
-                }
-
-            } while (!is_valid_board());
-
-            bool check = true;
-
-            for (int i = 0; i < ROWS; i++)
-            {
-                if (!mp[symbool[i]])
-                {
-                    check = false;
-                    break;
-                }
-            }
-
-            if (check)
-                break;
-        }
-    }
-
-    void vertical_line()
-    {
-        cout << "  ";
-
-        cout << "╠══════";
-        for (int i = 1; i < COLS; i++)
-            cout << "╬══════";
-        cout << "╣" << endl;
-    }
-
-    void horizontal_line(int row)
-    {
-        cout << row << " ";
-
-        for (int i = 0; i < COLS; i++)
-            cout << "║" << "  " << gems[board[row][i]] << "  ";
-
-        cout << "║" << endl;
-    }
-
-    void print_board()
-    {
-        cout << "  ";
-
-        for (int i = 0; i < COLS; i++)
-            cout << "    " << i << "  ";
-        cout << endl;
-
-        cout << "  ";
-        cout << "╔══════";
-        for (int i = 1; i < COLS; i++)
-            cout << "╦══════";
-        cout << "╗" << endl;
-
-        for (int i = 0; i < ROWS; i++)
-        {
-            if (i != 0)
-                vertical_line();
-            horizontal_line(i);
-        }
-
-        cout << "  ";
-        cout << "╚══════";
-        for (int i = 1; i < COLS; i++)
-            cout << "╩══════";
-        cout << "╝" << endl;
-    }
-
-    void print_header()
-    {
-        cout << "╔";
-        for (int i = 0; i < 111; i++)
-            cout << "═";
-        cout << "╗";
-        cout << endl;
-
-        cout << "║" << GREEN << "\t🏆Score: " << score << '\t' << RESET;
-        cout << "║" << YELLOW << "\t⏳Remaining Moves: " << moves << '\t' << RESET;
-        cout << "║" << PINK << "\t⚔️Level: " << level << '\t' << RESET;
-        cout << "║" << ORANGE << "\t🎯Goal Score: " << goal_score << '\t' << RESET << "║" << endl;
-
-        cout << "╚";
-        for (int i = 0; i < 111; i++)
-            cout << "═";
-        cout << "╝";
-        cout << "\n\n";
-    }
-
-    void print_controller()
-    {
-        cout << "\n\n";
-        for (int i = 0; i < 120; i++)
-            cout << "═";
-        cout << "\n\n";
-
-        cout << BLUEII << "[CONTROLS]:" << RESET;
-        cout << ORANGE << " W: 🔄Swap " << RESET << "║";
-        cout << GREENII << " H: 💡Hint(-" << hint_cost << " Score) " << RESET << "║";
-        cout << CYAN << " R: 🚀Rocket(-" << rocket_cost << " Score) " << RESET << "║";
-        cout << PURPLEII << " B: 💣Bomb(-" << bomb_cost << " Score) " << RESET << "║";
-        cout << YELLOW << " S: 💾Save " << RESET << "║";
-        cout << RED << " Q: 🔚Quit" << RESET;
-
-        cout << "\n\n";
-    }
-
-    void swap_gems()
-    {
-        cout << BLUEII << "[INPUT]: " << "Enter First Row & Col(r1 c1):\n\n"
-             << RESET;
-
-        int r1, c1;
-        cin >> r1 >> c1;
-        cout << endl;
-
-        cout << BLUEII << "[INPUT]:" << " Enter Second Row & Col(r2 c2):\n\n"
-             << RESET;
-
-        int r2, c2;
-        cin >> r2 >> c2;
-        cout << endl;
-
-        Sleep(loading_delay);
-        system("cls");
-
-        if (!validation(r1, c1, r2, c2))
-        {
-            cout << RED << "[ERROR]: Your inputs are invalid!\n\n"
-                 << RESET;
-
-            Sleep(error_delay);
-
-            return;
-        }
-
-        if (!cascade(r1, c1, r2, c2))
-        {
-            cout << RED << "Invalid Move!\n\n"
-                 << RESET;
-
-            Sleep(error_delay);
-        }
-        else
-        {
-            moves--;
-        }
-    }
-
-    void save_game()
-    {
-        system("cls");
-
-        ofstream my_file("gemcascade.txt");
-
-        for (int i = 0; i < ROWS; i++)
-        {
-            for (int j = 0; j < COLS; j++)
-            {
-                my_file << board[i][j] << '\n';
-            }
-        }
-
-        my_file << score << '\n'
-                << coef << '\n'
-                << moves << '\n'
-                << level;
-
-        cout << GREENIII << "Game Saved!" << RESET << endl;
-        Sleep(process_delay);
+        g.set_board(b);
 
         my_file.close();
-    }
-
-    bool game_control()
-    {
-        if (win_status())
-            return false;
-
-        print_header();
-        print_board();
-        print_controller();
-
-        char choice;
-        cin >> choice;
-        cout << endl;
-
-        if (choice == 'W' || choice == 'w')
-            swap_gems();
-
-        else if (choice == 'S' || choice == 's')
-            save_game();
-
-        else if (choice == 'B' || choice == 'b')
-        {
-            if (score >= 100)
-            {
-                cout << BLUEII << "[INPUT]:" << " Enter Row & Col(r c):\n\n"
-                     << RESET;
-
-                int r, c;
-                cin >> r >> c;
-                cout << endl;
-
-                system("cls");
-
-                if (!validation(r, c, 0, 0))
-                {
-                    cout << RED << "[ERROR]: Your inputs are invalid!\n\n"
-                         << RESET;
-
-                    Sleep(error_delay);
-
-                    return true;
-                }
-
-                bomb(r, c);
-                moves--;
-            }
-            else
-            {
-                cout << RED << "[ERORR]:" << " Your score is less than 100.\n\n"
-                     << RESET;
-            }
-
-            Sleep(process_delay);
-        }
-
-        else if (choice == 'R' || choice == 'r')
-        {
-            if (score >= 120)
-            {
-                cout << BLUEII << "[INPUT]:" << " Enter R or C:\n\n"
-                     << RESET;
-
-                char type;
-                cin >> type;
-                cout << endl;
-
-                if (type != 'C' && type != 'c' && type != 'R' && type != 'r')
-                {
-                    cout << RED << "[ERROR]: Your input is invalid!\n\n"
-                         << RESET;
-
-                    Sleep(error_delay);
-
-                    return true;
-                }
-
-                if (type == 'R' || type == 'r')
-                    cout << BLUEII << "[INPUT]:" << " Enter Row Number(r):\n\n"
-                         << RESET;
-                else
-                    cout << BLUEII << "[INPUT]:" << " Enter Col Number(c):\n\n"
-                         << RESET;
-
-                int num;
-                cin >> num;
-                cout << endl;
-
-                system("cls");
-
-                if (!validation(num, 0, 0, 0))
-                {
-                    cout << RED << "[ERROR]: Your input is invalid!\n\n"
-                         << RESET;
-
-                    Sleep(error_delay);
-
-                    return true;
-                }
-
-                rocket(type, num);
-
-                moves--;
-            }
-            else
-            {
-                cout << RED << "[ERORR]:" << " Your score is less than 120.\n\n"
-                     << RESET;
-            }
-
-            Sleep(process_delay);
-        }
-
-        else if (choice == 'H' || choice == 'h')
-        {
-            if (score >= 70)
-            {
-                vector<pii> v = hint();
-
-                cout << GREENIII << "[HINT]:" << "Swap " << v[0].ff << ' ' << v[0].ss << " with " << v[1].ff << ' ' << v[1].ss << "\n\n"
-                     << RESET;
-            }
-            else
-            {
-                cout << RED << "[ERORR]:" << " Your score is less than 70.\n\n"
-                     << RESET;
-            }
-
-            Sleep(error_delay);
-        }
-
-        else if (choice == 'Q' || choice == 'q')
-        {
-            system("cls");
-            return false;
-        }
-        else
-        {
-            cout << RED << "[ERROR]: Your input is invalid!\n\n"
-                 << RESET;
-            Sleep(error_delay);
-        }
 
         return true;
     }
@@ -928,7 +1042,7 @@ int main()
         cin >> choice;
         cout << endl;
 
-        if (choice > 4 || choice < 1)
+        if (choice < 1 || choice > 4)
         {
             cout << RED << "[ERROR]: Your Input is invalid!\n\n"
                  << RESET;
@@ -944,14 +1058,12 @@ int main()
             cout << PINKII << "1.Easy\n2.Medium\n3.Hard\n4.Back" << RESET << "\n\n";
 
             cin >> choice;
-            cout << endl;
 
             if (choice == 4)
                 continue;
 
-            string tmp[] = {"Easy", "Medium", "Hard"};
-
-            Game g(tmp[choice - 1]);
+            string levels[3] = {"Easy", "Medium", "Hard"};
+            Game g(levels[choice - 1]);
             g.initialize();
 
             while (true)
@@ -965,8 +1077,9 @@ int main()
         else if (choice == 2)
         {
             Game g("Easy");
+            GameLoader gl;
 
-            if (!g.load_game())
+            if (!gl.load_game(g))
                 continue;
 
             while (true)
@@ -980,26 +1093,16 @@ int main()
         else if (choice == 3)
         {
             ifstream my_file("about_game.txt");
-
-            string my_text;
-
-            while (getline(my_file, my_text))
-            {
-                cout << my_text << endl;
-            }
-
+            string line;
+            while (getline(my_file, line))
+                cout << line << endl;
             my_file.close();
 
-            cout << "\n\n";
-
-            cout << YELLOW << "Enter Q and Press ENTER for return." << RESET << endl;
-
+            cout << YELLOW << "\nEnter Q and Press ENTER for return." << RESET << endl;
             char c;
             cin >> c;
         }
         else if (choice == 4)
-        {
             return 0;
-        }
     }
 }
