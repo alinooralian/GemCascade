@@ -1,12 +1,14 @@
-<< Cascade Gem Game >>
+🍓🥕🍉🍋Cascade Gem Game🍇🌽🥝🍒
+
+
 Cascade Gem is a console-based Match Puzzle Game implemented in C++.
 
--Objective:
+Objective:
 
 The goal of the game is to reach the target score before running out of moves.
 Each difficulty level has a different number of available moves and a different target score.
-
--Controls:
+════════════════════════════════════════════════════════════════════════
+Controls:
 
 W : Swap two adjacent gems
 H : Get a Hint (-70 score)
@@ -14,15 +16,15 @@ B : Use Bomb (-100 score)
 R : Use Rocket (-120 score)
 S : Save the current game
 Q : Quit the game
-
--Matching Rules:
+═══════════════════════════════════════════════════════════════════════
+Matching Rules:
 
 A match consists of 3 or more connected gems of the same type.
 +Matching 3 gems removes those gems.
 +Matching 4 gems activates a special effect that clears an entire row or column.
 +Matching 5 gems removes all gems of the same type from the board.
-
--Cascade System:
+══════════════════════════════════════════════════════════════════════
+Cascade System:
 
 After gems are removed:
 Empty spaces are created.
@@ -30,8 +32,8 @@ Remaining gems fall down due to gravity.
 New gems are generated at the top.
 New matches are automatically removed.
 This process continues until no more matches remain.
-
--Special Powers:
+══════════════════════════════════════════════════════════════════════
+Special Powers:
 
 +Bomb
 	Removes a 3x3 area centered around the selected cell.
@@ -42,8 +44,8 @@ This process continues until no more matches remain.
 +Hint
 	Shows the best available move.
 	Cost: 70 score points.
-
--Difficulty Levels:
+═════════════════════════════════════════════════════════════════════
+Difficulty Levels:
 
 +Easy
 	50 Moves
@@ -54,9 +56,12 @@ This process continues until no more matches remain.
 +Hard
 	10 Moves
 	Target Score: 3530
+═════════════════════════════════════════════════════════════════════
+Winning Condition:
 
--Winning Condition:
 Reach or exceed the target score before your moves run out.
+═════════════════════════════════════════════════════════════════════
+Losing Condition:
 
--Losing Condition:
 Run out of moves before reaching the required score.
+═════════════════════════════════════════════════════════════════════
