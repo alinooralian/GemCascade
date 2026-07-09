@@ -11,11 +11,17 @@ Each difficulty level has a different number of available moves and a different 
 Controls:
 
 W : Swap two adjacent gems
+	EX) W -> 1 2
 H : Get a Hint (-70 score)
+	EX) H
 B : Use Bomb (-100 score)
+	EX) B -> 3 3
 R : Use Rocket (-120 score)
+	EX) R -> C -> 2
 S : Save the current game
+	EX) S
 Q : Quit the game
+	EX) Q
 ═══════════════════════════════════════════════════════════════════════
 Matching Rules:
 

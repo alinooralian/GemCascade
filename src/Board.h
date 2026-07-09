@@ -7,7 +7,7 @@
 class Board
 {
 private:
-    char symbool[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
+    char symbol[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
     RandomGemGenerator random_gem_generator;
     vector<vector<char>> board;
     bool mark[ROWS][COLS];
@@ -347,7 +347,7 @@ public:
 
             for (int i = 0; i < ROWS; i++)
             {
-                if (!mp[symbool[i]])
+                if (!mp[symbol[i]])
                 {
                     check = false;
                     break;

@@ -6,7 +6,7 @@
 class RandomGemGenerator
 {
 private:
-    char symbool[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
+    char symbol[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
     mt19937 gen{random_device{}()};
 
 public:
@@ -15,7 +15,7 @@ public:
         uniform_int_distribution<> dist(0, 7);
 
         int rand_idx = dist(gen);
-        return symbool[rand_idx];
+        return symbol[rand_idx];
     }
 };
 
