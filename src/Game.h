@@ -68,6 +68,10 @@ private:
             Sleep(cascade_delay);
 
             check = board.is_there_match();
+
+            cout << "\n\nPress any key and ENTER to continue...\n\n";
+            string st;
+            cin >> st;
         }
 
         (coef >= 40) ? (coef += 2) : (coef *= 2);
