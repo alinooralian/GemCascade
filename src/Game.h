@@ -45,13 +45,16 @@ private:
         while (check)
         {
             vector<pii> match = board.find_match();
-            score += match.size() * coef;
+
+            int added_score = match.size() * coef;
+            score += added_score;
 
             for (auto cell : match)
                 board.set_cell(cell.ff, cell.ss, ' ');
 
             renderer.print_board(board);
-            cout << endl;
+            cout << endl
+                 << CYAN << "Point added at this stage:\t" << GREENII << '+' << added_score << RESET << "\n\n";
             Sleep(loading_delay);
 
             board.apply_gravity();
