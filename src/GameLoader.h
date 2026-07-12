@@ -12,16 +12,10 @@ public:
         ifstream my_file("gemcascade.txt");
 
         if (!my_file.is_open())
-        {
-            system("cls");
-            cout << RED << "There is no unfinished game!" << RESET << endl;
-            Sleep(error_delay);
-
             return false;
-        }
 
         string my_text;
-        vector<char> vc[ROWS];
+        vector<vector<char>> vc(ROWS, vector<char>(COLS, ' '));
         int s, c, m;
         string l;
 
@@ -31,7 +25,8 @@ public:
             if (i < 64)
             {
                 int j = i / 8;
-                vc[j].push_back(my_text[0]);
+                int k = i % 8;
+                vc[j][k] = my_text[0];
             }
             else
             {
@@ -52,13 +47,7 @@ public:
         g.set_coef(c);
         g.set_score(s);
         g.set_moves(m);
-
-        vector<vector<char>> b(ROWS, vector<char>(COLS));
-        for (int row = 0; row < ROWS; row++)
-            for (int col = 0; col < COLS; col++)
-                b[row][col] = vc[row][col];
-
-        g.set_board(b);
+        g.set_board(vc);
 
         my_file.close();
 

@@ -7,6 +7,22 @@
 #include "src/Game.h"
 #include "src/GameLoader.h"
 
+void game_loop(Game &g)
+{
+    while (true)
+    {
+        system("cls");
+
+        if (!g.game_control())
+            return;
+    }
+}
+
+bool validation(int a, int l, int u)
+{
+    return (a >= l && a <= u);
+}
+
 int main()
 {
     SetConsoleOutputCP(CP_UTF8);
@@ -21,7 +37,7 @@ int main()
         cin >> choice;
         cout << endl;
 
-        if (choice < 1 || choice > 4)
+        if (!validation(choice, 1, 4))
         {
             cout << RED << "[ERROR]: Your Input is invalid!\n\n"
                  << RESET;
@@ -38,7 +54,7 @@ int main()
 
             cin >> choice;
 
-            if (choice < 1 || choice > 4)
+            if (!validation(choice, 1, 4))
             {
                 cout << RED << "[ERROR]: Your Input is invalid!\n\n"
                      << RESET;
@@ -53,13 +69,7 @@ int main()
             Game g(levels[choice - 1]);
             g.initialize();
 
-            while (true)
-            {
-                system("cls");
-
-                if (!g.game_control())
-                    break;
-            }
+            game_loop(g);
         }
         else if (choice == 2)
         {
@@ -67,15 +77,15 @@ int main()
             GameLoader gl;
 
             if (!gl.load_game(g))
-                continue;
-
-            while (true)
             {
                 system("cls");
+                cout << RED << "There is no unfinished game!" << RESET << endl;
+                Sleep(error_delay);
 
-                if (!g.game_control())
-                    break;
+                continue;
             }
+
+            game_loop(g);
         }
         else if (choice == 3)
         {

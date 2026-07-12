@@ -315,35 +315,33 @@ public:
                 if (board[i][j] != ' ')
                     break;
 
-                board[i][j] = random_gem_generator.generator();
+                board[i][j] = random_gem_generator.generate();
             }
         }
     }
 
     void initialize()
     {
-        map<char, bool> mp;
+        bool check;
 
-        while (true)
+        do
         {
-            do
+            map<char, bool> mp;
+
+            for (int i = 0; i < ROWS; i++)
             {
-                for (int i = 0; i < ROWS; i++)
+                for (int j = 0; j < COLS; j++)
                 {
-                    for (int j = 0; j < COLS; j++)
+                    do
                     {
-                        do
-                        {
-                            board[i][j] = random_gem_generator.generator();
-                        } while (create_initial_match(i, j));
+                        board[i][j] = random_gem_generator.generate();
+                    } while (create_initial_match(i, j));
 
-                        mp[board[i][j]] = true;
-                    }
+                    mp[board[i][j]] = true;
                 }
+            }
 
-            } while (!is_valid_board());
-
-            bool check = true;
+            check = true;
 
             for (int i = 0; i < ROWS; i++)
             {
@@ -354,9 +352,7 @@ public:
                 }
             }
 
-            if (check)
-                break;
-        }
+        } while (!is_valid_board() && check);
     }
 };
 

@@ -7,7 +7,7 @@
 class GameSaver
 {
 public:
-    bool save_game(string level, int coef, int score, int moves, Board b)
+    void save_game(string level, int coef, int score, int moves, Board b)
     {
         system("cls");
 
@@ -25,8 +25,6 @@ public:
                 << level;
 
         my_file.close();
-
-        return true;
     }
 };
 

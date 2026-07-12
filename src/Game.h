@@ -53,8 +53,7 @@ private:
                 board.set_cell(cell.ff, cell.ss, ' ');
 
             renderer.print_board(board);
-            cout << endl
-                 << CYAN << "Point added at this stage:\t" << GREENII << '+' << added_score << RESET << "\n\n";
+            cout << endl;
             Sleep(loading_delay);
 
             board.apply_gravity();
@@ -68,6 +67,8 @@ private:
             Sleep(cascade_delay);
 
             check = board.is_there_match();
+
+            cout << CYAN << "\nPoint added at this stage:\t" << GREENII << '+' << added_score << RESET << "\n\n";
 
             cout << "\n\nPress any key and ENTER to continue...\n\n";
             string st;
@@ -96,11 +97,7 @@ private:
 
         if (moves == 0)
         {
-            if (score >= goal_score)
-                cout << GREENII << "Congratulations!\nYou won." << RESET << endl;
-            else
-                cout << RED << "Sorry!\nYou lost." << RESET << endl;
-
+            cout << RED << "Sorry!\nYou lost." << RESET << endl;
             Sleep(error_delay);
             system("cls");
 
@@ -207,11 +204,9 @@ public:
     {
         GameSaver gs;
 
-        if (gs.save_game(level, coef, score, moves, board))
-        {
-            cout << GREENIII << "Game Saved!" << RESET << endl;
-            Sleep(process_delay);
-        }
+        gs.save_game(level, coef, score, moves, board);
+        cout << GREENIII << "Game Saved!" << RESET << endl;
+        Sleep(process_delay);
     }
 
     void bomb_handler()
@@ -332,14 +327,17 @@ public:
 
             cout << GREENIII << "[HINT]:" << "Swap " << v[0].ff << ' ' << v[0].ss << " with " << v[1].ff << ' ' << v[1].ss << "\n\n"
                  << RESET;
+
+            cout << "\n\nPress any key and ENTER to return...\n";
+            string st;
+            cin >> st;
         }
         else
         {
             cout << RED << "[ERORR]:" << " Your score is less than 70.\n\n"
                  << RESET;
+            Sleep(error_delay);
         }
-
-        Sleep(error_delay);
     }
 
     bool game_control()

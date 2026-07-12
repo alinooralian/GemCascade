@@ -10,7 +10,7 @@ private:
     mt19937 gen{random_device{}()};
 
 public:
-    char generator()
+    char generate()
     {
         uniform_int_distribution<> dist(0, 7);
 
